@@ -8,7 +8,7 @@ For a better understanding of the use case, refer to the diagram below:
 
 ---
 
-### Exercise 1.2.2 – Build Your First Command in SAP Automation Pilot
+### Exercise 1.1 – Build Your First Command in SAP Automation Pilot
 
 Let’s create your first custom command.
 
@@ -148,113 +148,57 @@ To explore the iputs  **DsagOtherEnvHanaBindingCredentials** from the leftsideba
 [](./images/ex01-24-dsag.png)
 [](./images/ex01-25-dsag.png)
 
-_Note: sensitve data / inputs is save to be stored as data gets encyrpeted when marked as sensitve. 
-_
+_Note: sensitve data / inputs is save to be stored as data gets encyrpeted when marked as sensitve._
 
 ✅ You’ve learned how to create, execute, and reuse inputs for commands in SAP Automation Pilot.
 
 ---
 
-## Exercise 1.3 – Exploring the other commands in the catalog "DSAG HANA Ops Ex01 - Backup Checks" 
+## Exercise 1.2 – Exploring the other commands in the catalog "DSAG HANA Ops Ex01 - Backup Checks" 
 
 Now, let’s go back to the catalog **DSAG HANA Ops Ex01 - Backup Checks** --> **Commands** --> **02GetHanaCloudBackup**
 [](./images/ex01-26-dsag.png)
-[](./images/ex01-25-dsag.png)
+[](./images/ex01-27-dsag.png)
 
-### Step 1 – Gather Required Values from SAP Automation Pilot
+### Step 1 – Check executor: "checkLatestBackupStart"
+- **command**: `sql-sapcp:ExecuteHanaCloudSqlStatement`
+- **statement**:
+```sql
+SELECT SYS_START_TIME
+FROM SYS.M_BACKUP_CATALOG
+WHERE ENTRY_ID = $(.CheckBackup.output.result);
+```
+- Result Transformer (within the Advanced tab section): `toArray[0][0][0]`
+[](./images/ex01-28-dsag.png)
 
-In **SAP Automation Pilot**, click on the **User** menu (bottom left corner) and copy the following:  
-- Tenant ID  
-- Tenant URL  
-![](./images/01-2-01.png)
+- **Validation**:
+-- Actual Value: `$(nowMillis - (.CheckBackup.output.result | toNumber) < (.execution.input.ageThreshold * 24 * 60 * 60 * 1000))`
+-- Operator: `equals`
+-- Expected value: true
+[explain what exactly this validation does and why it is important] 
 
-Then click **API** (bottom left menu) and copy the **Base URL**.  
-![](./images/01-2-02.png)
+- **Error Message**: 
+-- Message: `No database backup in $(.execution.input.ageThreshold) day(s). Last backup was on $(.CheckBackup.output.result | toNumber | toDate("yyyy-MM-dd HH:mm:ss"))`
+-- Actual Value: `$(.CheckBackup.output.errorCode == null)`
+-- Operator: `equals`
+-- Expected value: true
+[](./images/ex01-29-dsag.png)
+[explain what exactly this validation does and why it is important] 
 
-### Step 2 – Create a Service Account
+Outoput key: **backupStartTime** - string 
+-- values for the ouput: `$(.checkLatestBackupStart.output.result)`
 
-1. In the left menu, go to **Service Accounts** → **Create**.  
-   ![](./images/01-2-03.png)
-
-2. Fill in:  
-   - **Username**: `cloudALM`  
-   - **Description**: e.g. *Service account used in SAP Cloud ALM to trigger commands in SAP Automation Pilot*  
-   - **Permissions**: `Read`, `Write`, `Execute`  
-   - **Authentication Type**: `Basic`  
-
-   Click **Create**.  
-   ![](./images/01-2-04.png)
-
-4. Copy the **Username** and **Password** immediately — the password will not be displayed again.  
-   ![](./images/01-2-05.png)
-
-Click **Close** when you are done.
-
-You should now have the following values ready:  
-- Tenant ID (e.g. `1T0011140RX`)   
-- Tenant URL (e.g. `https://xp267-0XX-1a0od9aa.autopilot.cfapps.eu10.hana.ondemand.com`)
-- Base URL (e.g. `https://emea.autopilot.cloud.sap`)
-- Username (already copied)
-- Password (already copied)
-
----
-
-### Step 3 – Configure the Connection in SAP Cloud ALM
-
-1. Open **SAP Cloud ALM**:  
-   [https://xp267-calm-1hdji9xc.eu10-004.alm.cloud.sap/](https://xp267-calm-1hdji9xc.eu10-004.alm.cloud.sap/)
-
-2. From the main menu, go to **Operations → Landscape Management**.  
-   ![](./images/01-2-06.png)
-
-3. From the left sidebar, select **Services and Systems** → click **Add New Service**.  
-   ![](./images/01-2-07.png)
-
-4. Fill in the **Add Service** form:  
-   - **Name**: `AP-XP267-0XX` (e.g. `AP-XP267-001` for User 01 , `AP-XP267-041` for User 41, etc.)
-   - **System Number**: *Tenant ID* (copied earlier, e.g. `1T0011140RX` )  
-   - **Service Type**: `SAP Automation Pilot`  
-   - **Role**: `Test`  
-   - **Root URL**: *Tenant URL*  (e.g. `https://xp267-0XX-1a0od9aa.autopilot.cfapps.eu10.hana.ondemand.com`) 
-   - **Deployment Model**: `BTP System`  
-
-   Click **Save**.  
-   ![](./images/01-03-extra.png)
-
-5. Select the newly created service and open its details.  
-   ![](./images/01-2-09.png)
-
-6. Go to the **Endpoints** tab → click **Add**.  
-   ![](./images/01-2-10.png)
-
-7. Fill in the endpoint details:  
-   - **Endpoint Name**: `AP-XP267-0XX` (e.g. `AP-XP267-001` for User 01 , `AP-XP267-041` for User 41, etc.) 
-   - **Root URL**: *Base URL*  (e.g. `https://emea.autopilot.cloud.sap`)
-   - **Authentication**: Basic  
-   - **User**: *Username*  
-   - **Password**: *Password*  
-
-> ⚠️ **Remark:**  
-> **Do not** click the **Check Connection** button yet — the service has not been provisioned, and the connection check will fail until it is in place.
-
-
-   Click **Save**.  
-   ![](./images/01-2-11.png)
-
-9. After saving, click **Ping Connection** to verify the setup.  
-   ![](./images/01-2-12.png)
-
-✅ **Success!** The endpoint connection is active. You can now trigger Automation Pilot commands directly from **SAP Cloud ALM**.  
-   ![](./images/01-2-13.png)
+Now trigger the command and you will get also details about when the last DB back up was initiated (see below) 
+[](./images/ex01-30-dsag.png)
 
 ---
 
 ## Summary
 
 You have successfully:  
-- Explored **SAP Cloud ALM Health Monitoring**  
-- Created and executed commands in **SAP Automation Pilot**  
-- Integrated both products for automated operational actions  
+- Explored SAP Automation Pilot
+- Created and executed commands
+- Understand better command contract concept  
 
 Proceed to the next step:  
-➡️ [Exercise 2 – Extend SAP Automation Pilot with SAP AI Core for Log Assessment and AI Recommendations](../ex2/README.md)
+➡️ [Exercise 2 – Run HANA Cloud Audit logs check ](../ex2/README.md)
