@@ -1,20 +1,21 @@
-# Session ID - XP267 | Experience the automation of technical operation tasks on SAP BTP
+# SAP HANA Cloud Remediations in Action with SAP Automation Pilot 
+## Automated Operations & AI-enabled Ops Agents for SAP HANA Cloud with SAP Automation Pilot
+
 
 ## Description
-This repository contains the material for the SAP TechEd 2025 with Session ID XP267 - **"Experience the automation of technical operation tasks on SAP BTP"**
+This repository contains the material for the hands-on session - **"SAP HANA Cloud Remediations in Action with SAP Automation Pilot"** with a main focus on Automated Operations & AI-enabled Ops Agents for SAP HANA Cloud with SAP Automation Pilot
 
 
 ## Overview
 
-This session introduces attendees to SAP Automation Pilot and SAP Cloud ALM in the context of Day 2 Operations. The main  goal is for participants to gain practical experience in automating different set of technical operation tasks in SAP Business Technology Platform (SAP BTP). To do so, is needed to set up an integration between SAP Automation Pilot and SAP Cloud ALM. During this hands-on we will explore how to trigger ready-to-use commands in SAP Automation Pilot to do troubleshooting and perform remediation actions based on alerts in SAP Cloud ALM. You will also learn how to build your own automation flows or extend existing ones.
+This session introduces attendees to SAP Automation Pilot in the context of standard HANA Cloud DB operatiosn, DB lifecycle management tasks and also AI-enabled Ops agents. The main  goal is for participants to gain practical experience in automating different set of technical operation tasks. To do so, is needed to interact with SAP Automation Pilot and use it as an ops automation engine. During this hands-on we will explore how to trigger ready-to-use commands in SAP Automation Pilot , to run SQL queries for your SAP HANA Cloud and collect the needed insights.  to do troubleshooting and perform remediation actions based on alerts in SAP Cloud ALM. You will also learn how to build your own automation flows or extend existing ones.
 
 ## **Main scenario covered during this session:**
-![](./usecase-final.png) 
+![](./usecase-final-dsag.png) 
 Within the hands-on tutorial we will cover: 
-- Introduction to **SAP Automation Pilot** for running repetitive ops tasks
-- Introduction to **SAP Cloud ALM**
-- Extending SAP Automation Pilot by an integration to SAP AI Core service for **assessment of technical data and recommendations by AI**
-- Integration between SAP Automation Pilot and SAP Cloud ALM for  automating **operational tasks and remediations**
+- Introduction to **SAP Automation Pilot** for running ops tasks for **SAP HANA Cloud** 
+- Extending SAP Automation Pilot by an integration to SAP Alert Notification service for instant alerting in case of an incident detection
+- Integration between SAP Automation Pilot and SAP Joule in the context of pluggin an MCP server in Joule for AI-enabled Ops agents and automating **HANA Cloud lifecycle management  tasks in an Agentic manner**
 
 **Hands-on:**
   - Creating and testing **automation workflows** for common operational tasks.
@@ -35,14 +36,17 @@ Automations in SAP Automation Pilot can be triggered in various ways to best fit
 
 The service is designed to work with low latency, even under a heavy workload, and is capable of triggering hundreds of automations simultaneously.
 
-### SAP Cloud ALM for Operations
+## SAP Joule 
+[add text - intro to Joule, what ops agents are why it brings value to SAP HANA Cloud Lifecycle Management tasks)
+
+## [next steps] Potential extension by integrating Central Observability platform as SAP Cloud ALM for operations
+![](./usecase-final-dsag-calm.png) 
 
 **SAP Cloud ALM **is SAP’s cloud-based application lifecycle management solution designed to support the implementation and operation of SAP cloud and hybrid landscapes. It provides end-to-end transparency across business processes, integrations, and system health. 
-
 **Cloud ALM for Operations** focuses on ensuring business continuity by monitoring the availability, performance, and exceptions of cloud and on-premise solutions. It enables IT and operations teams to proactively detect and resolve issues through automated alerts, analytics, and intelligent insights. Together, they help organizations achieve efficient, reliable, and compliant operations across your SAP environment.
 
 ##  **Let's Build & Automate!**
-This TechEd session is **interactive  hands-on**, ensuring you gain **real-world experience** with products and tools delivered by SAP. Get ready for your Day 2 Operations activities!
+This  session is **interactive  hands-on**, ensuring you gain **real-world experience** with products and tools delivered by SAP. Get ready for your Automated Operations activities!
 
 ## Prerequisites (Already Prepared for You)
 
@@ -50,10 +54,10 @@ The following setup and access prerequisites have been **preconfigured for all p
 You do **not** need to perform any setup steps — simply proceed with the hands-on exercises.
 
 - Access to **SAP Automation Pilot**  
-- Access to **SAP Cloud ALM**  
-- A **Cloud Foundry CAP application** deployed in your SAP BTP subaccount   
-- **SAP AI Core** credentials with a **GPT-4o** deployment  
-- A **technical user** on your **SAP BTP Cloud Foundry** space (already assigned to each participant)
+- Read-only access to a single instance of **HANA Cloud** running on other environment 
+- Access to Joule Ops Agent (execute permissions granted) to interact with HANA DB Lifecyclemanagement tasks in an agentic manner   
+- **SAP AI Core** credentials with a **GPT-4o** deployment
+- Service key for **SAP Alert Notification service** in place
 
 
 ## Exercises
