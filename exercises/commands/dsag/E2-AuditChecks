@@ -1,0 +1,753 @@
+{
+  "id": "dsagHanaE2-<<<TENANT_ID>>>",
+  "technicalName": "dsagHanaE2",
+  "name": "DSAG HANA Ops Ex02 - Audit Checks",
+  "description": "Running Audit checks , looking for suspicious log entries and triggering alerts if any.  ",
+  "owner": "<<<TENANT_ID>>>",
+  "tags": {},
+  "documentationUrl": null,
+  "inputs": [
+    {
+      "id": "dsagHanaE2-<<<TENANT_ID>>>:dsagAns:1",
+      "name": "dsagAns",
+      "description": null,
+      "catalog": "dsagHanaE2-<<<TENANT_ID>>>",
+      "owner": null,
+      "version": 1,
+      "keys": {
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "description": null
+        }
+      },
+      "values": {
+        "serviceKey": ""
+      },
+      "tags": {}
+    }
+  ],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "connectivityResult": "$(.CheckHanaConnectivity.output.result)"
+        },
+        "executors": [
+          {
+            "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "statement": "SELECT * FROM SYS.DUMMY",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.user)",
+              "timeout": "10"
+            },
+            "alias": "CheckHanaConnectivity",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "dsagHanaE2-<<<TENANT_ID>>>:01RunHanaCloudAuditCheck:1",
+      "name": "01RunHanaCloudAuditCheck",
+      "description": "Checks HANA Cloud database for any suspicious audit logs in the last day.",
+      "catalog": "dsagHanaE2-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the specified database user."
+        },
+        "connectionUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "JDBC connection URL for the database."
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of a database user."
+        }
+      },
+      "outputKeys": {
+        "connectivityResult": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "connectivityResult": "$(.CheckHanaConnectivity.output.result)",
+          "logsResult": "$(\"\\n\\n\")$(.ReadAuditLogs.output.result | toArray[] | map(\"\\(.[0]) by \\(.[1] // \"UNKNOWN\") (\\(.[4]) entries)\") | join(\"\\n\"))"
+        },
+        "executors": [
+          {
+            "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "statement": "SELECT * FROM SYS.DUMMY",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.user)",
+              "timeout": "10"
+            },
+            "alias": "CheckHanaConnectivity",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "statement": "SELECT\n    AUDIT_POLICY_NAME,\n    USER_NAME,\n    APPLICATION_NAME,\n    APPLICATION_USER_NAME,\n    COUNT(*)\nFROM\n    AUDIT_LOG\nWHERE\n    TIMESTAMP > (ADD_SECONDS(CURRENT_TIMESTAMP, -86400))\n    AND NOT (\n        (\n            AUDIT_POLICY_NAME = 'All successful logins'\n            AND USER_NAME NOT IN ('DBADMIN')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'All unsuccessful logins'\n            AND USER_NAME = NULL\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'Authorizations changes'\n            AND USER_NAME IN ('SYSTEM', '_SYS_DI_TO')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'User administration'\n            AND USER_NAME IN ('SYSTEM', '_SYS_DI_TO')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'MandatoryAuditPolicy')\n        OR (\n            AUDIT_POLICY_NAME = '_SAP_authorizations')\n        OR (\n            AUDIT_POLICY_NAME = '_SAP_session connect')    \n    )\nGROUP BY\n    AUDIT_POLICY_NAME,\n    USER_NAME,\n    APPLICATION_NAME,\n    APPLICATION_USER_NAME;",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.user)",
+              "timeout": "10"
+            },
+            "alias": "ReadAuditLogs",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "dsagHanaE2-<<<TENANT_ID>>>:02RunHanaCloudAuditCheck:1",
+      "name": "02RunHanaCloudAuditCheck",
+      "description": "Checks HANA Cloud database for any suspicious audit logs in the last day.",
+      "catalog": "dsagHanaE2-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the specified database user."
+        },
+        "connectionUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "JDBC connection URL for the database."
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of a database user."
+        }
+      },
+      "outputKeys": {
+        "connectivityResult": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        },
+        "logsResult": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "connectivityResult": "$(.CheckHanaConnectivity.output.result)",
+          "ansAlertId": "$(.sendEmail.output.id)",
+          "logsResult": "$(\"\\n\\n\")$(.ReadAuditLogs.output.result | toArray[] | map(\"\\(.[0]) by \\(.[1] // \"UNKNOWN\") (\\(.[4]) entries)\") | join(\"\\n\"))"
+        },
+        "executors": [
+          {
+            "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "statement": "SELECT * FROM SYS.DUMMY",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.user)",
+              "timeout": "10"
+            },
+            "alias": "CheckHanaConnectivity",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "statement": "SELECT\n    AUDIT_POLICY_NAME,\n    USER_NAME,\n    APPLICATION_NAME,\n    APPLICATION_USER_NAME,\n    COUNT(*)\nFROM\n    AUDIT_LOG\nWHERE\n    TIMESTAMP > (ADD_SECONDS(CURRENT_TIMESTAMP, -86400))\n    AND NOT (\n        (\n            AUDIT_POLICY_NAME = 'All successful logins'\n            AND USER_NAME NOT IN ('DBADMIN')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'All unsuccessful logins'\n            AND USER_NAME = NULL\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'Authorizations changes'\n            AND USER_NAME IN ('SYSTEM', '_SYS_DI_TO')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'User administration'\n            AND USER_NAME IN ('SYSTEM', '_SYS_DI_TO')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'MandatoryAuditPolicy')\n        OR (\n            AUDIT_POLICY_NAME = '_SAP_authorizations')\n        OR (\n            AUDIT_POLICY_NAME = '_SAP_session connect')    \n    )\nGROUP BY\n    AUDIT_POLICY_NAME,\n    USER_NAME,\n    APPLICATION_NAME,\n    APPLICATION_USER_NAME;",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.user)",
+              "timeout": "10"
+            },
+            "alias": "ReadAuditLogs",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "ans-sapcp:SendAnsEvent:1",
+            "input": {
+              "severity": "WARNING",
+              "subject": "DSAG HANA Alert Trigerred by $(.execution.metadata.originatorId)",
+              "resourceName": "dsagHana",
+              "eventType": "dsagHanaAlert",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "body": "Detected suspicious audit log entries in the policies listed below for HANA with connection URL: $(.execution.input.connectionUrl).$(\"\\n\\n\") Please check if these activities are justified:$(\"\\n\\n\")$(.ReadAuditLogs.output.result | toArray[] | map(\"\\(.[0]) by \\(.[1] // \"UNKNOWN\") (\\(.[4]) entries)\") | join(\"\\n\"))",
+              "category": "ALERT",
+              "resourceType": "database"
+            },
+            "alias": "sendEmail",
+            "description": "send alert via ANS",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$( [.ReadAuditLogs.output.result | toArray[][] ] | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "dsagHanaE2-<<<TENANT_ID>>>:03RunHanaCloudAuditCheck:1",
+      "name": "03RunHanaCloudAuditCheck",
+      "description": "Checks HANA Cloud database for any suspicious audit logs in the last day.",
+      "catalog": "dsagHanaE2-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the specified database user."
+        },
+        "connectionUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "JDBC connection URL for the database."
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ANS service key"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of a database user."
+        }
+      },
+      "outputKeys": {
+        "connectivityResult": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        },
+        "ansAlertId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "ANS ID generated by the service. Used to identify this event."
+        },
+        "logsResult": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "connectivityResult": "$(.CheckHanaConnectivity.output.result)",
+          "ansAlertId": "$(.sendEmail.output.id)",
+          "logsResult": "$(\"\\n\\n\")$(.ReadAuditLogs.output.result | toArray[] | map(\"\\(.[0]) by \\(.[1] // \"UNKNOWN\") (\\(.[4]) entries)\") | join(\"\\n\"))"
+        },
+        "executors": [
+          {
+            "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "statement": "SELECT * FROM SYS.DUMMY",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.user)",
+              "timeout": "10"
+            },
+            "alias": "CheckHanaConnectivity",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "statement": "SELECT\n    AUDIT_POLICY_NAME,\n    USER_NAME,\n    APPLICATION_NAME,\n    APPLICATION_USER_NAME,\n    COUNT(*)\nFROM\n    AUDIT_LOG\nWHERE\n    TIMESTAMP > (ADD_SECONDS(CURRENT_TIMESTAMP, -86400))\n    AND NOT (\n        (\n            AUDIT_POLICY_NAME = 'All successful logins'\n            AND USER_NAME NOT IN ('DBADMIN')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'All unsuccessful logins'\n            AND USER_NAME = NULL\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'Authorizations changes'\n            AND USER_NAME IN ('SYSTEM', '_SYS_DI_TO')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'User administration'\n            AND USER_NAME IN ('SYSTEM', '_SYS_DI_TO')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'MandatoryAuditPolicy')\n        OR (\n            AUDIT_POLICY_NAME = '_SAP_authorizations')\n        OR (\n            AUDIT_POLICY_NAME = '_SAP_session connect')    \n    )\nGROUP BY\n    AUDIT_POLICY_NAME,\n    USER_NAME,\n    APPLICATION_NAME,\n    APPLICATION_USER_NAME;",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.user)",
+              "timeout": "10"
+            },
+            "alias": "ReadAuditLogs",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "ans-sapcp:SendAnsEvent:1",
+            "input": {
+              "severity": "WARNING",
+              "subject": "DSAG HANA Alert Trigerred by $(.execution.metadata.originatorId)",
+              "resourceName": "dsagHana",
+              "eventType": "dsagHanaAlert",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "body": "Detected suspicious audit log entries in the policies listed below for HANA with connection URL: $(.execution.input.connectionUrl).$(\"\\n\\n\") Please check if these activities are justified:$(\"\\n\\n\")$(.ReadAuditLogs.output.result | toArray[] | map(\"\\(.[0]) by \\(.[1] // \"UNKNOWN\") (\\(.[4]) entries)\") | join(\"\\n\"))",
+              "category": "ALERT",
+              "resourceType": "database"
+            },
+            "alias": "sendEmail",
+            "description": "send alert via ANS",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$( [.ReadAuditLogs.output.result | toArray[][] ] | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": [
+          {
+            "status": "FAILED",
+            "execute": "dsagHanaE2-<<<TENANT_ID>>>:SendEmailFailedHanaAuditCheck:1",
+            "input": {
+              "reportExecutionId": "$(.execution.metadata.executionId)",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "reportExecutionOriginatorId": "$(.execution.metadata.originatorId)"
+            },
+            "when": null
+          }
+        ]
+      },
+      "id": "dsagHanaE2-<<<TENANT_ID>>>:RunHanaCloudAuditCheck:1",
+      "name": "RunHanaCloudAuditCheck",
+      "description": "Checks HANA Cloud database for any suspicious audit logs in the last day.",
+      "catalog": "dsagHanaE2-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the specified database user."
+        },
+        "connectionUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "JDBC connection URL for the database."
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ANS service key"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of a database user."
+        }
+      },
+      "outputKeys": {
+        "connectivityResult": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        },
+        "ansAlertId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "ANS ID generated by the service. Used to identify this event."
+        },
+        "logsResult": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [
+          {
+            "alias": "AnsCredentials",
+            "valueFrom": {
+              "inputReference": "dsagHanaE2-<<<TENANT_ID>>>:dsagAns:1",
+              "inputKey": null
+            }
+          }
+        ],
+        "output": {
+          "ansAlertId": "$(.sendEmail.output.id)"
+        },
+        "executors": [
+          {
+            "execute": "ans-sapcp:SendAnsEvent:1",
+            "input": {
+              "severity": "ERROR",
+              "subject": "DSAG HANA - Failed Audit Report triggered by $(.execution.input.reportExecutionOriginatorId) at $(nowMillis | toDate(\"yyyy-MM-dd\"))",
+              "resourceName": "dsagHana",
+              "eventType": "dsagHanaFailedCheck",
+              "serviceKey": "$(.AnsCredentials.serviceKey)",
+              "body": "SAP HANA Cloud Audit Logs automated checks by SAP Automation Pilot had failed.$(\"\\n\\n\") Automation Pilot Command Execution ID $(.execution.input.reportExecutionId) towards SAP HANA Connection URL: $(.execution.input.connectionUrl).$(\"\\n\\n\") You attention is required immediately!",
+              "category": "ALERT",
+              "resourceType": "database"
+            },
+            "alias": "sendEmail",
+            "description": "send alert via ANS",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$( [.ReadAuditLogs.output.result | toArray[][] ] | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "dsagHanaE2-<<<TENANT_ID>>>:SendEmailFailedHanaAuditCheck:1",
+      "name": "SendEmailFailedHanaAuditCheck",
+      "description": "Checks HANA Cloud database for any suspicious audit logs in the last day.",
+      "catalog": "dsagHanaE2-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "reportExecutionId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "report Execution ID used for the email"
+        },
+        "connectionUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "JDBC connection URL for the database."
+        },
+        "reportExecutionOriginatorId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        }
+      },
+      "outputKeys": {
+        "ansAlertId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "ANS ID generated by the service. Used to identify this event."
+        }
+      },
+      "tags": {}
+    }
+  ]
+}
