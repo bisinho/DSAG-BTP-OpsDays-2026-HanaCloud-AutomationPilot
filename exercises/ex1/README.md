@@ -4,8 +4,8 @@ In this exercise, you will build your first command in SAP Automation Pilot - it
 
 
 For a better understanding of the use case, refer to the diagram below:  
-<img src="./images/ex-01-scenario-dsag.png" width="700" height="400">
 
+![](./images/ex-01-scenario-dsag.png)
 ---
 
 ### Exercise 1.1 – Build Your First Command in SAP Automation Pilot
