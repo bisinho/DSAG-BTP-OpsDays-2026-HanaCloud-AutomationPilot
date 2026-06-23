@@ -1,72 +1,10 @@
-# Exercise 1 – Access SAP Cloud ALM and Trigger Commands to Your App via SAP Automation Pilot
+# Exercise 1 – HANA Cloud Backup Checks
 
-In this exercise, you will:  
-- Access **SAP Cloud ALM** and explore metrics in **Health Monitoring**  
-- Interact with application endpoints via **SAP Automation Pilot**  
-- Set up the integration between **SAP Cloud ALM** and **SAP Automation Pilot**
+In this exercise, you will build your first command in SAP Automation Pilot - it will be about performing checks whether there is a recent backup on our SAP HANA Cloud instance. 
+
 
 For a better understanding of the use case, refer to the diagram below:  
-<img src="./images/ex-01-scenario.png" width="700" height="400">
-
----
-
-## Exercise 1.1 – Access SAP Cloud ALM and Explore Health Monitoring Metrics
-
-1. Access **SAP Cloud ALM**:  
-   [https://xp267-calm-1hdji9xc.eu10-004.alm.cloud.sap/](https://xp267-calm-1hdji9xc.eu10-004.alm.cloud.sap/)
-
-   **Note**: click on the option to sign in with: `tdct3ched1.accounts.ondemand.com` and then log in with the credentials (email and password you had already used in exercise 0) 
-   ![](./images/1-00-00-1.png)
-
-2. **Log in** with your provided user credentials.  
-
-3. From the main menu, select **Operations**.  
-   ![](./images/01-01.png)
-
-4. Click on **Health Monitoring**.  
-   ![](./images/01-02.png)
-
-5. You will land on the **Health Monitoring Overview** screen.  
-   Make sure the **Scope** is set to your subaccount, e.g. `XP267-0XX_CF` (for example, `XP267_001_CF`).  
-   ![](./images/01-03.png)
-
-6. Click on the tile to view all available services and systems in Health Monitoring.  
-   ![](./images/01-04.png)
-
-7. Click on a service to access the **SAP BTP Cloud Foundry Metrics Overview**.  
-   These are metrics ingested from your CAP app through **OpenTelemetry**.  
-   ![](./images/01-05.png)
-
-8. Optionally, click on the **All Metrics** tab to explore the collected metrics in detail.  
-   ![](./images/01-06.png)
-
-✅ **Well done!** You can now monitor the health of your CAP app.  
-Next, you will explore **SAP Automation Pilot** and interact with your app endpoints.
-
----
-
-## Exercise 1.2 – Interact with App Endpoints via SAP Automation Pilot
-
-### Exercise 1.2.1 – Explore Main Sections in SAP Automation Pilot
-
-1. Return to your **SAP BTP subaccount** (`XP267-0XX`, for example, `XP267-001`).  
-
-2. From the left-side menu, go to **Services → Instances and Subscriptions**.  
-
-3. Under **Subscriptions**, click on **Automation Pilot**.  
-   ![](./images/01-1-01.png)
-
-4. You will land on the **SAP Automation Pilot Dashboard**.  
-   ![](./images/01-1-02.png)
-
-5. From the left menu, open **Provided Catalogs**.  
-   Browse through the 300+ ready-to-use automation commands grouped by catalogs.  
-   ![](./images/01-1-03.png)
-
-You can also explore:  
-- **My Catalogs** – your custom and extended commands  
-- **Commands** – all commands available to your user  
-- **Inputs** – reusable parameters that can be referenced in commands  
+<img src="./images/ex-01-scenario-dsag.png" width="700" height="400">
 
 ---
 
@@ -75,20 +13,20 @@ You can also explore:
 Let’s create your first custom command.
 
 1. Click  the **Commands** menu item from the left sidebar to navigate to the "Commands" section in SAP Automation Pilot 
-   ![](./images/1-00-00-2.png)
+   ![](./images/1-00-00-2-dsag.png)
 
 2. Click **Create**.  
-   ![](./images/1-00-00-3.png)
+   ![](./images/ex01-03-dsag.png)
 
 3. Fill in the details:  
-   - **Catalog**: type in `XP267 Ex01 – Kick Start Commands` and from the drop-down select your XP267 Kick Start Catalog
-   - **Name**: `simpleHttpRequest`  
+   - **Catalog**: type in `DSAG HANA Ops Ex01 - Backup Checks` and from the drop-down select your DSAG HANA Ops Ex01 - Backup Checks catalog
+   - **Name**: `simpleHanaCloudBackupCheck`  
 
    Click **Create**.  
-   ![](./images/1-00-00-4.png)
+   ![](./images/ex01-04-dsag.png)
 
 4. The command is created but currently has no inputs, outputs, or executors.  
-   ![](./images/1-2-2-04.png)
+   
 
 #### Add Inputs
 
@@ -96,112 +34,132 @@ Let’s create your first custom command.
    ![](./images/1-2-2-05.png)
 
    Fill in:  
-   - **Name**: `url`  
-   - **Type**: `string`  
+   - **Name**: `connectionUrl`  
+   - **Type**: `string`
+   - **Description**: JDBC connection URL for the database
    - Mark as **Required**  
    Click **Add**.  
-   ![](./images/1-2-2-06.png)
+   ![](./images/ex01-05-dsag.png)
 
-2. Add another input key to define the HTTP method:  
-   - **Name**: `method`  
-   - **Type**: `string`  
-   - **Default Value Source**: `Static`  
-   - **Value**: `GET`  
+ 2. Add another input key to define the user which we'll use to call establish the connection to the DB:  
+   - **Name**: `user`  
+   - **Type**: `string`
+   - **Description**: Name of a database user.
+   - Mark as **Required**  
    Click **Add**.  
-   ![](./images/1-2-2-07.png)
+   ![](./images/ex01-06-dsag.png)
+
+3. Add another input key to do a reference to an input with user's password:  
+   - **Name**: `password`  
+   - **Type**: `string`
+   - **Description**: Password for the specified database user.
+   - **Sensitive**: toggle the bar
+   - Mark as **Required**  
+   Click **Add**.  
+   ![](./images/ex01-07-dsag.png)
+
+
+4. Add another input key to define the DB backup threshold:  
+   - **Name**: `ageThreshold`  
+   - **Type**: `number`
+   - **Description**: Backup age threshold in days
+   - **Default Value Source**: `Static`  
+   - **Value**: `3`  
+   Click **Add**.  
+   ![](./images/ex01-08-dsag.png)
+
+You should get a **set of inputs** like the ones from the screenshot below - it is a crucial part of command contract as without inputs the command won't be possible to be executed successfully. 
+![](./images/ex01-09-dsag.png)
+
 
 #### Add Executor
 
 1. Click **Add** under the **Executors** section.  
-   ![](./images/1-2-2-08.png)
+   ![](./images/ex01-10-dsag.png)
 
 2. In the **Add Executor** dialog:  
    - Click **Here** to define the execution order  
-   - **Alias**: `getAppEndpoint`  
-   - **Command**: `HttpRequest`  
+   - **Alias**: `CheckBackup`  
+   - **Command**: `ExecuteHanaCloudSqlStatement`  
    - Keep **Automap parameters** enabled  
    Click **Add**.  
-   ![](./images/1-2-2-09.png)
+   ![](./images/ex01-11-dsag.png)
 
    You will now see the executor added with mapped parameters.  
-   ![](./images/1-2-2-10.png)
+   ![](./images/ex01-12-dsag.png)
+
+   Now you need to define the statment that will be executed to the DB. To do so, navigate to the Executors parameter section -> Click **Edit** and within the statement section add the following SQL query:
+
+```sql
+SELECT MAX(ENTRY_ID)
+FROM SYS.M_BACKUP_CATALOG
+WHERE ENTRY_TYPE_NAME = 'complete data backup' AND STATE_NAME = 'successful'
+```
+ ![](./images/ex01-17-dsag.png)
+ ![](./images/ex01-18-dsag.png)
 
 #### Add Outputs
 
 1. Click **Add** under the **Output Keys** section.  
-   ![](./images/1-2-2-11.png)
+   ![](./images/ex01-13-dsag.png)
 
    Add the following outputs:  
-   - **Name**: `status` – **Type**: `number`  
-   - **Name**: `body` – **Type**: `string`  
-   ![](./images/1-2-2-14.png)
+   - **Name**: `backupResult` – **Type**: `string`  
+   ![](./images/ex01-14-dsag.png)
 
 3. Scroll down to **Configuration**, open the **output** executor, click **Edit**, and map the outputs to their respective values:  
-   - **body**: `$(.getAppEndpoint.output.body)`    
-   - **status**: `$(.getAppEndpoint.output.status)`  
+   - **backupResult**: `$(.CheckBackup.output.result)`    
+     
    Click **Update**.  
-   ![](./images/1-00-00-5.png)
-   ![](./images/1-2-2-16-2.png)
+   ![](./images/ex01-15-dsag.png)
+   ![](./images/ex01-16-dsag.png)
 
 
 #### Trigger the Command
 
 1. Click **Trigger**.  
-   ![](./images/1-2-2-15.png)
+   ![](./images/ex01-19-dsag.png)
 
-2. Provide the **URL** of your Bookshop web app (copied from Exercise 0) and click **Trigger**.  
-   ![](./images/1-2-2-16.png)
+2. Withhin the Inputs drop-down filed, pick up the iputs  **DsagOtherEnvHanaBindingCredentials** (there are the inputs for the URL connection, user and password needed for the command contract) and click **Trigger**.  
+   ![](./images/ex01-20-dsag.png)
 
 3. Once complete, click **Show** under **Output** to view the returned values.  
-   ![](./images/1-2-2-17.png)
+   ![](./images/ex01-21-dsag.png)
 
 ✅ The command executed successfully and returned outputs such as status, headers, and response body.
-![](./images/01-00.png)
+![](./images/ex01-22-dsag.png)
+
+To convert it into a string, you need to transofrm the result. Go back to the executor "CheckBackup" --> Click **Edit** within the **Parameters** section -> **Advanced** Tab -> add the following expression with the filed **Result Transformer:**
+`toArray[0][0][0]`
+
+Click **Update** and retrigger the command. The output of the command shall look like this one which is the DB Backup ID: 
+![](./images/ex01-23-dsag.png)
 
 ---
 
-### [ 🧩 Optional ] – Using Stored Input Keys
+### [ 🧩 Note ] – Using Stored Input Keys
 > **Note (Optional Exercise):**  
 > This exercise is **optional**. Due to time limitations, it is **recommended to proceed with the next tasks** first.  
 > You can return to the optional exercises **after completing the full scenario**, if time permits.
 
-
 You can store and reuse input values in **SAP Automation Pilot** so that you are not asked to provide static parameters each time a command gets triggered but the input can be fetched dynamically or from already stored input key.
 
-Let's demonstrate how that works by extending the command you just have created - `simpleHttpRequest` . First , let's start by exploring and updating an input key. 
+To explore the iputs  **DsagOtherEnvHanaBindingCredentials** from the leftsidebar -->  **Inputs** -->  **DsagOtherEnvHanaBindingCredentials** and you will see all stored input keys we already have used. 
+[](./images/ex01-24-dsag.png)
+[](./images/ex01-25-dsag.png)
 
-1. Click **Inputs** in the left menu.  
-   ![](./images/1-2-2-21.png)
-
-2. Select the input set `appEndPoints` and click the **Edit** icon.  
-   ![](./images/1-2-2-22.png)
-
-3. Update the `urlHomepage` value with your app’s URL and **Save**.  
-   ![](./images/1-2-2-23.png)
-
-4. Click on **My Catalogs** menu item from the left sidebar, then click on **Kick Start Catalog** and open the `simpleHttpRequest` command.  
-   ![](./images/new-6.png)
-   ![](./images/new-7.png)
-
-6. Edit the **URL** input key within the **Input Keys contract section** by clicking on the **pencil button** to reference the stored value:  
-   - Uncheck **Required**  
-   - **Default Value Source**: `Input Key`  
-   - **Input**: `appEndPoints`  
-   - **Input Key**: `urlHomepage`  
-   Click **Update**.
-   ![](./images/01-01-extra.png)
-   ![](./images/1-2-2-25.png)
-
-7. Trigger the command again — it will now automatically use the stored input value.  
-   ![](./images/1-2-2-26.png)
+_Note: sensitve data / inputs is save to be stored as data gets encyrpeted when marked as sensitve. 
+_
 
 ✅ You’ve learned how to create, execute, and reuse inputs for commands in SAP Automation Pilot.
 
 ---
 
-## Exercise 1.3 – Set Up Integration Between SAP Cloud ALM and SAP Automation Pilot
+## Exercise 1.3 – Exploring the other commands in the catalog "DSAG HANA Ops Ex01 - Backup Checks" 
 
-Now, let’s integrate **SAP Cloud ALM** with **SAP Automation Pilot** to to enable automated command execution.
+Now, let’s go back to the catalog **DSAG HANA Ops Ex01 - Backup Checks** --> **Commands** --> **02GetHanaCloudBackup**
+[](./images/ex01-26-dsag.png)
+[](./images/ex01-25-dsag.png)
 
 ### Step 1 – Gather Required Values from SAP Automation Pilot
 
