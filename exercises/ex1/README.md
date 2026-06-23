@@ -160,7 +160,7 @@ Now, let’s go back to the catalog **DSAG HANA Ops Ex01 - Backup Checks** --> *
 ![](./images/ex01-26-dsag.png)
 ![](./images/ex01-27-dsag.png)
 
-### Step 1 – Check executor: "checkLatestBackupStart"
+### Check executor: "checkLatestBackupStart"
 **command**: `sql-sapcp:ExecuteHanaCloudSqlStatement`
 **statement**:
 ```sql
