@@ -175,7 +175,7 @@ WHERE ENTRY_ID = $(.CheckBackup.output.result);
 - Actual Value: `$(nowMillis - (.CheckBackup.output.result | toNumber) < (.execution.input.ageThreshold * 24 * 60 * 60 * 1000))`
 - Operator: `equals`
 - Expected value: true
-[explain what exactly this validation does and why it is important] 
+// to-do: explain what exactly this validation does and why it is important
 
 **Error Message**: 
 - Message: `No database backup in $(.execution.input.ageThreshold) day(s). Last backup was on $(.CheckBackup.output.result | toNumber | toDate("yyyy-MM-dd HH:mm:ss"))`
@@ -183,7 +183,7 @@ WHERE ENTRY_ID = $(.CheckBackup.output.result);
 - Operator: `equals`
 - Expected value: true
 ![](./images/ex01-29-dsag.png)
-[explain what exactly this validation does and why it is important] 
+//to-do: explain what exactly this validation does and why it is important
 
 Outoput key: **backupStartTime** - string 
 - values for the ouput: `$(.checkLatestBackupStart.output.result)`
