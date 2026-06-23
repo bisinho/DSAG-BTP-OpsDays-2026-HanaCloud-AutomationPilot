@@ -145,8 +145,8 @@ Click **Update** and retrigger the command. The output of the command shall look
 You can store and reuse input values in **SAP Automation Pilot** so that you are not asked to provide static parameters each time a command gets triggered but the input can be fetched dynamically or from already stored input key.
 
 To explore the iputs  **DsagOtherEnvHanaBindingCredentials** from the leftsidebar -->  **Inputs** -->  **DsagOtherEnvHanaBindingCredentials** and you will see all stored input keys we already have used. 
-[](./images/ex01-24-dsag.png)
-[](./images/ex01-25-dsag.png)
+![](./images/ex01-24-dsag.png)
+![](./images/ex01-25-dsag.png)
 
 _Note: sensitve data / inputs is save to be stored as data gets encyrpeted when marked as sensitve._
 
@@ -157,39 +157,39 @@ _Note: sensitve data / inputs is save to be stored as data gets encyrpeted when 
 ## Exercise 1.2 – Exploring the other commands in the catalog "DSAG HANA Ops Ex01 - Backup Checks" 
 
 Now, let’s go back to the catalog **DSAG HANA Ops Ex01 - Backup Checks** --> **Commands** --> **02GetHanaCloudBackup**
-[](./images/ex01-26-dsag.png)
-[](./images/ex01-27-dsag.png)
+![](./images/ex01-26-dsag.png)
+![](./images/ex01-27-dsag.png)
 
 ### Step 1 – Check executor: "checkLatestBackupStart"
-- **command**: `sql-sapcp:ExecuteHanaCloudSqlStatement`
-- **statement**:
+**command**: `sql-sapcp:ExecuteHanaCloudSqlStatement`
+**statement**:
 ```sql
 SELECT SYS_START_TIME
 FROM SYS.M_BACKUP_CATALOG
 WHERE ENTRY_ID = $(.CheckBackup.output.result);
 ```
 - Result Transformer (within the Advanced tab section): `toArray[0][0][0]`
-[](./images/ex01-28-dsag.png)
+![](./images/ex01-28-dsag.png)
 
-- **Validation**:
--- Actual Value: `$(nowMillis - (.CheckBackup.output.result | toNumber) < (.execution.input.ageThreshold * 24 * 60 * 60 * 1000))`
--- Operator: `equals`
--- Expected value: true
+**Validation**:
+- Actual Value: `$(nowMillis - (.CheckBackup.output.result | toNumber) < (.execution.input.ageThreshold * 24 * 60 * 60 * 1000))`
+- Operator: `equals`
+- Expected value: true
 [explain what exactly this validation does and why it is important] 
 
-- **Error Message**: 
--- Message: `No database backup in $(.execution.input.ageThreshold) day(s). Last backup was on $(.CheckBackup.output.result | toNumber | toDate("yyyy-MM-dd HH:mm:ss"))`
--- Actual Value: `$(.CheckBackup.output.errorCode == null)`
--- Operator: `equals`
--- Expected value: true
-[](./images/ex01-29-dsag.png)
+**Error Message**: 
+- Message: `No database backup in $(.execution.input.ageThreshold) day(s). Last backup was on $(.CheckBackup.output.result | toNumber | toDate("yyyy-MM-dd HH:mm:ss"))`
+- Actual Value: `$(.CheckBackup.output.errorCode == null)`
+- Operator: `equals`
+- Expected value: true
+![](./images/ex01-29-dsag.png)
 [explain what exactly this validation does and why it is important] 
 
 Outoput key: **backupStartTime** - string 
--- values for the ouput: `$(.checkLatestBackupStart.output.result)`
+- values for the ouput: `$(.checkLatestBackupStart.output.result)`
 
 Now trigger the command and you will get also details about when the last DB back up was initiated (see below) 
-[](./images/ex01-30-dsag.png)
+![](./images/ex01-30-dsag.png)
 
 ---
 
