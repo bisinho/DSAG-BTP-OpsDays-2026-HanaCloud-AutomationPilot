@@ -1,210 +1,614 @@
-# Exercise 2 – Run HANA Cloud Audit Logs Checks via SAP Automation Pilot
+# Exercise 2 – Run HANA Cloud Audit Log Checks via SAP Automation Pilot
 
-In this exercise, you will build / explore another command in SAP Automation Pilot - it will be about performimg an SQL query to find any audit log entries that might be considered suspiciousour in our SAP HANA Cloud instance. 
+In this exercise, you will build upon the concepts introduced in Exercise 1 and use SAP Automation Pilot to analyze SAP HANA Cloud audit logs.
 
-Auditing allows you to monitor and record selected actions performed in the SAP HANA Cloud database. It can help you achieve better security in the following ways:
-* Uncover security vulnerabilities
-* Show attempts to breach security
+While backups help protect your data, audit logs help protect your system by recording important security-related activities. Monitoring audit logs is a common operational responsibility for database administrators and operations teams, helping them identify suspicious activities, security incidents, or configuration changes.
 
-The commands does so by pulling data from the [AUDIT_LOG system view](https://help.sap.com/docs/HANA_SERVICE_CF/7c78579ce9b14a669c1f3295b0d8ca16/d1fe1244d29510148f69be8b0e060dcc.html). If there is at least one such audit log entry, the command will get it and we can define the next step - in our scenario it is about pushing an event to SAP Aleer Notification service (note the configurations in SAP Alert Notificaton service are preconfigured as we are unclear about participants email and just user receives all notifications via email). 
+Instead of manually reviewing audit logs, SAP Automation Pilot can automate these checks and notify operators whenever unusual activities are detected.
 
-For a better understanding of the use case, refer to the diagram below:  
-
+For a better understanding of the use case, refer to the diagram below:
 ![](./images/ex-02-scenario-dsag.png)
+---
+
+## Objective
+
+After completing this exercise, you will:
+
+* Execute SQL queries against SAP HANA Cloud using SAP Automation Pilot
+* Analyze audit log entries from the `AUDIT_LOG` system view
+* Filter out expected system activities
+* Trigger alerts automatically via SAP Alert Notification service
+* Understand how listeners can react to failed executions
+* Learn how event-driven operations can improve operational efficiency
 
 ---
 
-### Exercise 1.1 – Build Your First Command in SAP Automation Pilot
+# Exercise 2.1 – Verify Connectivity to SAP HANA Cloud
 
-Let’s create your first custom command.
+Before performing any audit checks, it is good practice to verify that the database is reachable and the provided credentials are valid.
 
-1. Click  the **Commands** menu item from the left sidebar to navigate to the "Commands" section in SAP Automation Pilot 
-   ![](./images/1-00-00-2-dsag.png)
+For this purpose, navigate to:
 
-2. Click **Create**.  
-   ![](./images/ex01-03-dsag.png)
+**Commands** → **01RunHanaCloudAuditCheck**
 
-3. Fill in the details:  
-   - **Catalog**: type in `DSAG HANA Ops Ex01 - Backup Checks` and from the drop-down select your DSAG HANA Ops Ex01 - Backup Checks catalog
-   - **Name**: `simpleHanaCloudBackupCheck`  
+Open the command and review the configuration.
 
-   Click **Create**.  
-   ![](./images/ex01-04-dsag.png)
+You will notice a single executor:
 
-4. The command is created but currently has no inputs, outputs, or executors.  
-   
+**CheckHanaConnectivity**
 
-#### Add Inputs
+The executor uses the following command:
 
-1. Click **Add** under the **Input Keys** section.  
-   ![](./images/1-2-2-05.png)
+```text
+sql-sapcp:ExecuteHanaCloudSqlStatement
+```
 
-   Fill in:  
-   - **Name**: `connectionUrl`  
-   - **Type**: `string`
-   - **Description**: JDBC connection URL for the database
-   - Mark as **Required**  
-   Click **Add**.  
-   ![](./images/ex01-05-dsag.png)
-
- 2. Add another input key to define the user which we'll use to call establish the connection to the DB:  
-   - **Name**: `user`  
-   - **Type**: `string`
-   - **Description**: Name of a database user.
-   - Mark as **Required**  
-   Click **Add**.  
-   ![](./images/ex01-06-dsag.png)
-
-3. Add another input key to do a reference to an input with user's password:  
-   - **Name**: `password`  
-   - **Type**: `string`
-   - **Description**: Password for the specified database user.
-   - **Sensitive**: toggle the bar
-   - Mark as **Required**  
-   Click **Add**.  
-   ![](./images/ex01-07-dsag.png)
-
-
-4. Add another input key to define the DB backup threshold:  
-   - **Name**: `ageThreshold`  
-   - **Type**: `number`
-   - **Description**: Backup age threshold in days
-   - **Default Value Source**: `Static`  
-   - **Value**: `3`  
-   Click **Add**.  
-   ![](./images/ex01-08-dsag.png)
-
-You should get a **set of inputs** like the ones from the screenshot below - it is a crucial part of command contract as without inputs the command won't be possible to be executed successfully. 
-![](./images/ex01-09-dsag.png)
-
-
-#### Add Executor
-
-1. Click **Add** under the **Executors** section.  
-   ![](./images/ex01-10-dsag.png)
-
-2. In the **Add Executor** dialog:  
-   - Click **Here** to define the execution order  
-   - **Alias**: `CheckBackup`  
-   - **Command**: `ExecuteHanaCloudSqlStatement`  
-   - Keep **Automap parameters** enabled  
-   Click **Add**.  
-   ![](./images/ex01-11-dsag.png)
-
-   You will now see the executor added with mapped parameters.  
-   ![](./images/ex01-12-dsag.png)
-
-   Now you need to define the statment that will be executed to the DB. To do so, navigate to the Executors parameter section -> Click **Edit** and within the statement section add the following SQL query:
+The executor runs the following SQL statement:
 
 ```sql
-SELECT MAX(ENTRY_ID)
-FROM SYS.M_BACKUP_CATALOG
-WHERE ENTRY_TYPE_NAME = 'complete data backup' AND STATE_NAME = 'successful'
+SELECT * FROM SYS.DUMMY
 ```
- ![](./images/ex01-17-dsag.png)
- ![](./images/ex01-18-dsag.png)
 
-#### Add Outputs
+This is a lightweight connectivity check. `SYS.DUMMY` is a system table that always contains one row, so the query is useful for validating whether the command can successfully connect to the SAP HANA Cloud database and execute SQL.
 
-1. Click **Add** under the **Output Keys** section.  
-   ![](./images/ex01-13-dsag.png)
+### Why is this important?
 
-   Add the following outputs:  
-   - **Name**: `backupResult` – **Type**: `string`  
-   ![](./images/ex01-14-dsag.png)
+Before troubleshooting security findings, operators should first verify that:
 
-3. Scroll down to **Configuration**, open the **output** executor, click **Edit**, and map the outputs to their respective values:  
-   - **backupResult**: `$(.CheckBackup.output.result)`    
-     
-   Click **Update**.  
-   ![](./images/ex01-15-dsag.png)
-   ![](./images/ex01-16-dsag.png)
+* The database is online
+* Network connectivity is available
+* The JDBC connection URL is correct
+* The provided database user and password are valid
+* SAP Automation Pilot can execute SQL statements against the target database
 
-
-#### Trigger the Command
-
-1. Click **Trigger**.  
-   ![](./images/ex01-19-dsag.png)
-
-2. Withhin the Inputs drop-down filed, pick up the iputs  **DsagOtherEnvHanaBindingCredentials** (there are the inputs for the URL connection, user and password needed for the command contract) and click **Trigger**.  
-   ![](./images/ex01-20-dsag.png)
-
-3. Once complete, click **Show** under **Output** to view the returned values.  
-   ![](./images/ex01-21-dsag.png)
-
-✅ The command executed successfully and returned outputs such as status, headers, and response body.
-![](./images/ex01-22-dsag.png)
-
-To convert it into a string, you need to transofrm the result. Go back to the executor "CheckBackup" --> Click **Edit** within the **Parameters** section -> **Advanced** Tab -> add the following expression with the filed **Result Transformer:**
-`toArray[0][0][0]`
-
-Click **Update** and retrigger the command. The output of the command shall look like this one which is the DB Backup ID: 
-![](./images/ex01-23-dsag.png)
+Otherwise, a failed audit check may simply indicate a connectivity issue rather than a security problem.
 
 ---
 
-### [ 🧩 Note ] – Using Stored Input Keys
-> **Note (Optional Exercise):**  
-> This exercise is **optional**. Due to time limitations, it is **recommended to proceed with the next tasks** first.  
-> You can return to the optional exercises **after completing the full scenario**, if time permits.
+## Review the Command Contract
 
-You can store and reuse input values in **SAP Automation Pilot** so that you are not asked to provide static parameters each time a command gets triggered but the input can be fetched dynamically or from already stored input key.
+The command requires the following input keys:
 
-To explore the iputs  **DsagOtherEnvHanaBindingCredentials** from the leftsidebar -->  **Inputs** -->  **DsagOtherEnvHanaBindingCredentials** and you will see all stored input keys we already have used. 
-![](./images/ex01-24-dsag.png)
-![](./images/ex01-25-dsag.png)
+| Input Key       | Type   | Description                          |
+| --------------- | ------ | ------------------------------------ |
+| `connectionUrl` | string | JDBC connection URL for the database |
+| `user`          | string | Name of the database user            |
+| `password`      | string | Password for the database user       |
 
-_Note: sensitve data / inputs is save to be stored as data gets encyrpeted when marked as sensitve._
+The output key is:
 
-✅ You’ve learned how to create, execute, and reuse inputs for commands in SAP Automation Pilot.
+| Output Key           | Type   | Description                         |
+| -------------------- | ------ | ----------------------------------- |
+| `connectivityResult` | string | Result returned by the SQL executor |
+
+The output is mapped from:
+
+```text
+$(.CheckHanaConnectivity.output.result)
+```
 
 ---
 
-## Exercise 1.2 – Exploring the other commands in the catalog "DSAG HANA Ops Ex01 - Backup Checks" 
+### Trigger the Command
 
-Now, let’s go back to the catalog **DSAG HANA Ops Ex01 - Backup Checks** --> **Commands** --> **02GetHanaCloudBackup**
-![](./images/ex01-26-dsag.png)
-![](./images/ex01-27-dsag.png)
+1. Click **Trigger**
+2. Select the input set:
+   **DsagOtherEnvHanaBindingCredentials**
+3. Click **Trigger**
 
-### Check executor: "checkLatestBackupStart"
-**command**: `sql-sapcp:ExecuteHanaCloudSqlStatement`
-**statement**:
+After the execution completes, open the output section.
+
+You should see a successful response from the database.
+
+✅ Connectivity to SAP HANA Cloud has been verified successfully.
+
+---
+
+# Exercise 2.2 – Read and Analyze Audit Logs
+
+Now let's extend the command and perform an actual audit log analysis.
+
+Navigate to:
+
+**Commands** → **02RunHanaCloudAuditCheck**
+
+Compared to the previous version, this command introduces an additional executor:
+
+**ReadAuditLogs**
+
+The command now contains two executors:
+
+| Executor                | Purpose                                         |
+| ----------------------- | ----------------------------------------------- |
+| `CheckHanaConnectivity` | Verifies that the database connection works     |
+| `ReadAuditLogs`         | Reads and summarizes relevant audit log entries |
+
+---
+
+## Review the Connectivity SQL Statement
+
+The first executor is still used as a basic connectivity check:
+
 ```sql
-SELECT SYS_START_TIME
-FROM SYS.M_BACKUP_CATALOG
-WHERE ENTRY_ID = $(.CheckBackup.output.result);
+SELECT * FROM SYS.DUMMY
 ```
-- Result Transformer (within the Advanced tab section): `toArray[0][0][0]`
-![](./images/ex01-28-dsag.png)
 
-**Validation**:
-- Actual Value: `$(nowMillis - (.CheckBackup.output.result | toNumber) < (.execution.input.ageThreshold * 24 * 60 * 60 * 1000))`
-- Operator: `equals`
-- Expected value: true
-// to-do: explain what exactly this validation does and why it is important
+This confirms that the database can be reached before the command continues with the audit log analysis.
 
-**Error Message**: 
-- Message: `No database backup in $(.execution.input.ageThreshold) day(s). Last backup was on $(.CheckBackup.output.result | toNumber | toDate("yyyy-MM-dd HH:mm:ss"))`
-- Actual Value: `$(.CheckBackup.output.errorCode == null)`
-- Operator: `equals`
-- Expected value: true
-![](./images/ex01-29-dsag.png)
-//to-do: explain what exactly this validation does and why it is important
+---
 
-Outoput key: **backupStartTime** - string 
-- values for the ouput: `$(.checkLatestBackupStart.output.result)`
+## Review the Audit Log SQL Statement
 
-Now trigger the command and you will get also details about when the last DB back up was initiated (see below) 
-![](./images/ex01-30-dsag.png)
+Open the **ReadAuditLogs** executor and review the SQL statement.
+
+```sql
+SELECT
+    AUDIT_POLICY_NAME,
+    USER_NAME,
+    APPLICATION_NAME,
+    APPLICATION_USER_NAME,
+    COUNT(*)
+FROM
+    AUDIT_LOG
+WHERE
+    TIMESTAMP > (ADD_SECONDS(CURRENT_TIMESTAMP, -86400))
+    AND NOT (
+        (
+            AUDIT_POLICY_NAME = 'All successful logins'
+            AND USER_NAME NOT IN ('DBADMIN')
+        )
+        OR (
+            AUDIT_POLICY_NAME = 'All unsuccessful logins'
+            AND USER_NAME = NULL
+        )
+        OR (
+            AUDIT_POLICY_NAME = 'Authorizations changes'
+            AND USER_NAME IN ('SYSTEM', '_SYS_DI_TO')
+        )
+        OR (
+            AUDIT_POLICY_NAME = 'User administration'
+            AND USER_NAME IN ('SYSTEM', '_SYS_DI_TO')
+        )
+        OR (
+            AUDIT_POLICY_NAME = 'MandatoryAuditPolicy'
+        )
+        OR (
+            AUDIT_POLICY_NAME = '_SAP_authorizations'
+        )
+        OR (
+            AUDIT_POLICY_NAME = '_SAP_session connect'
+        )
+    )
+GROUP BY
+    AUDIT_POLICY_NAME,
+    USER_NAME,
+    APPLICATION_NAME,
+    APPLICATION_USER_NAME;
+```
+
+---
+
+## Understanding the Query
+
+The query reads entries from the SAP HANA Cloud `AUDIT_LOG` system view.
+
+It focuses only on the last 24 hours:
+
+```sql
+TIMESTAMP > (ADD_SECONDS(CURRENT_TIMESTAMP, -86400))
+```
+
+The value `-86400` represents 24 hours in seconds.
+
+The query then excludes expected or low-value audit entries by using the `AND NOT (...)` block.
+
+Examples of excluded activities include:
+
+* Regular successful login events
+* Expected internal SAP authorization activities
+* Mandatory audit policy events
+* Internal SAP session connection events
+* Expected actions from technical users such as `SYSTEM` or `_SYS_DI_TO`
+
+The remaining entries are grouped by:
+
+```sql
+AUDIT_POLICY_NAME,
+USER_NAME,
+APPLICATION_NAME,
+APPLICATION_USER_NAME
+```
+
+and counted with:
+
+```sql
+COUNT(*)
+```
+
+This gives operators a summarized view of potentially relevant audit activities instead of returning every single raw audit log entry.
+
+---
+
+## Understanding the Output Transformation
+
+The raw SQL result contains multiple rows and columns.
+
+To make the output easier to read, the command transforms the result into a summarized text format:
+
+```text
+$("\n\n")$(.ReadAuditLogs.output.result | toArray[] | map("\(.[0]) by \(.[1] // "UNKNOWN") (\(.[4]) entries)") | join("\n"))
+```
+
+This expression takes the SQL result and formats each row into a readable line.
+
+Example output:
+
+```text
+Authorizations changes by WORKSHOP_USER (4 entries)
+
+User administration by ADMIN (1 entries)
+```
+
+This transformation converts technical database output into information that can be consumed more easily by operations teams.
+
+---
+
+## Review the Command Outputs
+
+The command returns:
+
+| Output Key           | Source                                    |
+| -------------------- | ----------------------------------------- |
+| `connectivityResult` | `$(.CheckHanaConnectivity.output.result)` |
+| `logsResult`         | Transformed result from `ReadAuditLogs`   |
+
+The `logsResult` output is the operationally meaningful result of this command.
+
+---
+
+### Trigger the Command
+
+1. Click **Trigger**
+2. Select:
+   **DsagOtherEnvHanaBindingCredentials**
+3. Click **Trigger**
+
+Review the output.
+
+The command now returns:
+
+* Connectivity status
+* Matching audit log entries
+
+If no suspicious activities are found, the result may be empty.
+
+✅ Audit log analysis completed successfully.
+
+---
+
+# Exercise 2.3 – Generate Alerts Automatically
+
+Detecting suspicious activities is valuable, but operators should also be informed immediately when such events occur.
+
+In this exercise, you will extend the command from Exercise 2.2 and add an integration with **SAP Alert Notification service**.
+
+You will start from:
+
+```text
+02RunHanaCloudAuditCheck
+```
+
+and extend it so that the final command behaves like:
+
+```text
+03RunHanaCloudAuditCheck
+```
+
+> **Note:**
+> The expected result of this exercise is already available as reference command:
+>
+> ```text
+> 03RunHanaCloudAuditCheck
+> ```
+>
+> You can use it to compare your final configuration.
+
+---
+
+## Step 1 – Clone the Existing Command
+
+1. Navigate to:
+
+   **Commands** → **02RunHanaCloudAuditCheck**
+
+2. Open the command.
+
+3. Click **Clone**.
+
+4. Use the following name for the new command:
+
+```text
+03RunHanaCloudAuditCheck
+```
+
+5. Click **Create**.
+
+You now have a copy of the command that already contains:
+
+* `CheckHanaConnectivity`
+* `ReadAuditLogs`
+* `connectivityResult`
+* `logsResult`
+
+In the next steps, you will extend it with alerting.
+
+---
+
+## Step 2 – Add the SAP Alert Notification Input
+
+The command needs an SAP Alert Notification service key in order to send an event.
+
+Add a new input key:
+
+| Field       | Value             |
+| ----------- | ----------------- |
+| Name        | `serviceKey`      |
+| Type        | `object`          |
+| Description | `ANS service key` |
+| Required    | Yes               |
+
+This input will later be mapped from the prepared input set:
+
+```text
+dsagAns
+```
+
+---
+
+## Step 3 – Add a New Executor
+
+Scroll to the **Executors** section and click **Add**.
+
+Configure the executor as follows:
+
+| Field   | Value          |
+| ------- | -------------- |
+| Alias   | `sendEmail`    |
+| Command | `SendAnsEvent` |
+| Catalog | `ans-sapcp`    |
+
+This executor will send an event to SAP Alert Notification service.
+
+---
+
+## Step 4 – Configure the Executor Parameters
+
+Open the parameter mapping of the `sendEmail` executor and provide the following values:
+
+| Parameter      | Value                                                              |
+| -------------- | ------------------------------------------------------------------ |
+| `severity`     | `WARNING`                                                          |
+| `subject`      | `DSAG HANA Alert Trigerred by $(.execution.metadata.originatorId)` |
+| `resourceName` | `dsagHana`                                                         |
+| `eventType`    | `dsagHanaAlert`                                                    |
+| `serviceKey`   | `$(.execution.input.serviceKey)`                                   |
+| `category`     | `ALERT`                                                            |
+| `resourceType` | `database`                                                         |
+
+For the body, use:
+
+```text
+Detected suspicious audit log entries in the policies listed below for HANA with connection URL: $(.execution.input.connectionUrl).$("\n\n") Please check if these activities are justified:$("\n\n")$(.ReadAuditLogs.output.result | toArray[] | map("\(.[0]) by \(.[1] // "UNKNOWN") (\(.[4]) entries)") | join("\n"))
+```
+
+This body dynamically includes:
+
+* The HANA Cloud connection URL
+* The suspicious audit log entries
+* The audit policy name
+* The user
+* The number of entries
+
+---
+
+## Step 5 – Add Conditional Execution
+
+The alert should only be sent if suspicious audit log entries were found.
+
+Open the **Condition** section of the `sendEmail` executor and configure:
+
+| Field      | Value                                                          |
+| ---------- | -------------------------------------------------------------- |
+| Expression | `$( [.ReadAuditLogs.output.result \| toArray[][] ] \| length)` |
+| Operator   | `GREATER_THAN`                                                 |
+| Value      | `0`                                                            |
+
+This means:
+
+```text
+Send an alert only if the audit log query returned at least one result.
+```
+
+This prevents unnecessary notifications when no relevant audit log entries were found.
+
+---
+
+## Step 6 – Add Output Key for the Alert ID
+
+Add a new output key:
+
+| Field       | Value                                                           |
+| ----------- | --------------------------------------------------------------- |
+| Name        | `ansAlertId`                                                    |
+| Type        | `string`                                                        |
+| Description | `ANS ID generated by the service. Used to identify this event.` |
+
+Then map the output value to:
+
+```text
+$(.sendEmail.output.id)
+```
+
+The command should now return:
+
+* `connectivityResult`
+* `logsResult`
+* `ansAlertId`
+
+---
+
+## Step 7 – Trigger the Extended Command
+
+1. Click **Trigger**
+
+2. Select the prepared input sets:
+
+   * **DsagOtherEnvHanaBindingCredentials**
+   * **dsagAns**
+
+3. Click **Trigger**
+
+After the execution completes, check the command output.
+
+If suspicious audit log entries were found, the `sendEmail` executor should run and return an Alert Notification event ID.
+
+You should also receive an email notification generated through SAP Alert Notification service.
+
+---
+
+## Step 8 – Compare with the Reference Command
+
+Open the reference command:
+
+```text
+03RunHanaCloudAuditCheck
+```
+
+Compare your command with the reference implementation.
+
+Check that your command contains:
+
+* The original connectivity check
+* The audit log query
+* The `sendEmail` executor
+* The `serviceKey` input
+* The condition to send alerts only when results exist
+* The `ansAlertId` output
+
+✅ You have successfully extended the audit log check with automatic alerting.
+
+---
+
+# Exercise 2.4 – Reacting to Failures Automatically
+
+Operational automation should not only handle successful executions.
+
+It should also react when something goes wrong.
+
+Navigate to:
+
+**Commands** → **RunHanaCloudAuditCheck**
+
+Open the command and scroll down to the **Listeners** section.
+
+You will notice a listener configured for:
+
+```text
+FAILED
+```
+
+The listener automatically triggers another command:
+
+```text
+SendEmailFailedHanaAuditCheck
+```
+
+---
+
+## Understanding Listeners
+
+Listeners allow SAP Automation Pilot to react automatically to command execution events.
+
+In this example:
+
+```text
+RunHanaCloudAuditCheck
+        |
+        v
+Command Fails
+        |
+        v
+Listener Fires
+        |
+        v
+SendEmailFailedHanaAuditCheck
+```
+
+The follow-up command sends an Alert Notification event informing operators that the audit check itself has failed.
+
+This ensures that operational issues are detected even when the primary automation cannot complete successfully.
+
+---
+
+## Review the Follow-Up Command
+
+Open:
+
+**SendEmailFailedHanaAuditCheck**
+
+Notice that the command automatically receives:
+
+* Execution ID
+* Originator information
+* Database connection details
+
+These values are passed by the listener and included in the generated notification.
+
+This allows operators to quickly investigate the root cause of the failure.
+
+---
+
+## Why Is This Important?
+
+Without automation:
+
+```text
+Audit Check Fails
+        |
+        v
+Nobody Notices
+        |
+        v
+Security Monitoring Stops
+```
+
+With listeners:
+
+```text
+Audit Check Fails
+        |
+        v
+Alert Generated Automatically
+        |
+        v
+Operator Investigates
+```
+
+This pattern is frequently used when building self-monitoring operational automations.
+
+✅ You have successfully implemented automated failure handling.
 
 ---
 
 ## Summary
 
-You have successfully:  
-- Explored SAP Automation Pilot
-- Created and executed commands
-- Understand better command contract concept  
+You have successfully:
 
-Proceed to the next step:  
-➡️ [Exercise 2 – Run HANA Cloud Audit logs check ](../ex2/README.md)
+* Verified connectivity to SAP HANA Cloud
+* Queried and analyzed audit logs
+* Filtered expected system activities
+* Generated alerts using SAP Alert Notification service
+* Implemented event-driven notifications
+* Used listeners to react automatically to failures
+
+In the next exercise, we will continue building operational automations and explore how these capabilities can be integrated with AI-enabled Operations Agents powered by SAP Joule.
