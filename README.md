@@ -82,7 +82,7 @@ Throughout the hands-on exercises, you will use these services to automate opera
 Let's start the exercise!
 
 Proceed to the next step:  
-➡️ [Exercise 0 – Get to Know Your Environment](../ex0/README.md)
+➡️ [Exercise 0 – Get to Know Your Environment](..exercises/ex0/README.md)
 
 
 
