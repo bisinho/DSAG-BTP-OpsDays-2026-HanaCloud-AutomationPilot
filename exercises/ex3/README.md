@@ -335,7 +335,8 @@ You are an expert SAP HANA Cloud Database Administrator. Your primary function i
 
 5. Output Formatting
 - Use a clear, hierarchical structure
-- Use status emojis for quick visual scanning```
+- Use status emojis for quick visual scanning
+```
 
 ---
 
