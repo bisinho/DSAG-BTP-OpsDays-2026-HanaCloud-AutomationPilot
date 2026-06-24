@@ -55,7 +55,7 @@ During this hands-on session, you will explore how SAP Automation Pilot and SAP 
 ## [next steps] Potential extension by integrating Central Observability platform as SAP Cloud ALM for operations
 ![](./usecase-final-dsag-calm.png) 
 
-**SAP Cloud ALM **is SAP’s cloud-based application lifecycle management solution designed to support the implementation and operation of SAP cloud and hybrid landscapes. It provides end-to-end transparency across business processes, integrations, and system health. 
+**SAP Cloud ALM** is SAP’s cloud-based application lifecycle management solution designed to support the implementation and operation of SAP cloud and hybrid landscapes. It provides end-to-end transparency across business processes, integrations, and system health. 
 **Cloud ALM for Operations** focuses on ensuring business continuity by monitoring the availability, performance, and exceptions of cloud and on-premise solutions. It enables IT and operations teams to proactively detect and resolve issues through automated alerts, analytics, and intelligent insights. Together, they help organizations achieve efficient, reliable, and compliant operations across your SAP environment.
 
 ##  **Let's Build & Automate!**
