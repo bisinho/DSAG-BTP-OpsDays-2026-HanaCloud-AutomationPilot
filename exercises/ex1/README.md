@@ -107,6 +107,8 @@ This is exactly the approach you will use throughout this hands-on session: exec
 
 In the next exercise, you will use this command as the foundation for building your first SAP HANA Cloud operational automation.
 
+Let's build our very first command in SAP Automation Pilot.
+
 1. Click  the **Commands** menu item from the left sidebar to navigate to the "Commands" section in SAP Automation Pilot 
    ![](./images/1-00-00-2-dsag.png)
 
