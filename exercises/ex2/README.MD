@@ -734,3 +734,6 @@ You have successfully:
 * Used listeners to react automatically to failures
 
 In the next exercise, we will continue building operational automations and explore how these capabilities can be integrated with AI-enabled Operations Agents powered by SAP Joule.
+
+Proceed to the next step:  
+➡️ [Exercise 3 – AI-Enabled Operations with SAP Joule and SAP Automation Pilot](../ex3/README.md)
