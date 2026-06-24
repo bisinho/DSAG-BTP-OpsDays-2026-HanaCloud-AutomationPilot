@@ -85,14 +85,6 @@ can be exposed as a tool with:
 
 This allows an AI Agent to execute the command and immediately receive the result.
 
-Start with creating the MCP server. 
-
-![](./images/ex03-dsag-06.png)
-
-Then expose any command to an AI agent by adding it as a tool to the MCP server , e.g. `GetHanaCloudBackup` 
-
-![](./images/ex03-dsag-07.png)
-
 The following documentation explains the integration between SAP Automation Pilot and AI agents in more detail:
 
 * Integrating SAP Automation Pilot with AI Agents: https://help.sap.com/docs/automation-pilot/automation-pilot/integrating-service-with-ai-agents
@@ -129,11 +121,15 @@ These commands can easily be extended to cover virtually any SAP HANA Cloud Day-
 
 To understand the concept, let's review a simple example.
 
-Open the command:
+Let's sStart with creating the MCP server. 
+Click on **MCP Servers** -> **Create** and specify MCP server name and desription (for reference, see the screenshot below)
 
-```text
-GetHanaCloudBackup
-```
+![](./images/ex03-dsag-06.png)
+
+Then expose any command to an AI agent by adding it as a tool to the MCP server. Navigate to MCP Server itself, scroll to **Tools** -> click **Add** by clicking on  , e.g. `GetHanaCloudBackup` 
+
+![](./images/ex03-dsag-07.png)
+
 
 Within SAP Automation Pilot, the command can be exposed through MCP by configuring:
 
@@ -145,7 +141,13 @@ Within SAP Automation Pilot, the command can be exposed through MCP by configuri
 
 This allows AI Agents to safely execute the command and retrieve information about the latest database backup.
 
+It's all setup now, you have an MCP server in SAP Automation Pilot and it has one tool (command) added to it. 
+![](./images/ex03-dsag-07.png)
+
 Because the command is marked as Read-Only, the AI Agent cannot modify any resources.
+
+Hint: if you wish to use the MCP server endopoint, just click into **MCP Endpoint** -> **Copy** . 
+![](./images/ex03-dsag-08.png)
 
 ---
 
