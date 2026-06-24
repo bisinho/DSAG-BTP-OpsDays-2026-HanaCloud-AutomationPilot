@@ -377,7 +377,6 @@ while following operational guardrails defined by the operations team.
 # Exercise 3.4 – Interact with the Agent
 
 ➡️ Open the Agent following this URL (already deployed and running as a stand-alone agent):
-
 https://automationpilot-1wku9ttv.us30.sapdas.cloud.sap/webclient/standalone/da_hanacloudopsagentdemo
 
 Login using:
