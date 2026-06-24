@@ -175,7 +175,19 @@ WHERE ENTRY_ID = $(.CheckBackup.output.result);
 - Actual Value: `$(nowMillis - (.CheckBackup.output.result | toNumber) < (.execution.input.ageThreshold * 24 * 60 * 60 * 1000))`
 - Operator: `equals`
 - Expected value: true
-// to-do: explain what exactly this validation does and why it is important
+### Understanding the Validation Logic
+
+The validation compares the timestamp of the latest successful backup with the threshold specified by the user.
+
+This allows SAP Automation Pilot to determine whether the database has been backed up recently enough to meet operational requirements.
+
+For example:
+
+- Last backup 1 day ago → Success
+- Last backup 2 days ago → Success
+- Last backup 5 days ago with threshold set to 3 days → Failure
+
+Such validations help operations teams identify backup issues before they become business-critical incidents.
 
 **Error Message**: 
 - Message: `No database backup in $(.execution.input.ageThreshold) day(s). Last backup was on $(.CheckBackup.output.result | toNumber | toDate("yyyy-MM-dd HH:mm:ss"))`
@@ -183,12 +195,22 @@ WHERE ENTRY_ID = $(.CheckBackup.output.result);
 - Operator: `equals`
 - Expected value: true
 ![](./images/ex01-29-dsag.png)
-//to-do: explain what exactly this validation does and why it is important
 
-Outoput key: **backupStartTime** - string 
+#### Why Is This Error Message Important?
+
+Instead of returning raw SQL output, SAP Automation Pilot converts technical information into meaningful operational insights.
+This allows operators, monitoring tools, and AI Agents to understand immediately whether action is required without interpreting database-specific details.
+
+### New output `backupStartTime`
+A new outoput key that returns when the backup had been started: 
+name: `backupStartTime`
+type: `string`
+
+Mapping the output within the output section: 
 - values for the ouput: `$(.checkLatestBackupStart.output.result)`
 
-Now trigger the command and you will get also details about when the last DB back up was initiated (see below) 
+### Triger the command
+Now trigger the command and you will get also details about when the last DB back up was initiated (see below). 
 ![](./images/ex01-30-dsag.png)
 
 ---
