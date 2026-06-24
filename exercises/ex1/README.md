@@ -320,4 +320,4 @@ You have successfully:
 - Understand better command contract concept  
 
 Proceed to the next step:  
-➡️ [Exercise 2 – Run HANA Cloud Audit logs check ](../ex2/README.md)
+➡️ [Exercise 2 – Run HANA Cloud Audit logs check ](../ex2/README.MD)
