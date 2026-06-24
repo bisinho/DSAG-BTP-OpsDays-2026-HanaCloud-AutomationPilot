@@ -387,6 +387,32 @@ XP267-0XX@education.cloud.sap
 
 and the password provided during the workshop.
 
+> [!IMPORTANT]
+>
+> ### Workshop Environment Limitation
+>
+> The **HANA Lifecycle Operations Agent** used during this workshop has been intentionally configured to operate only against the shared SAP HANA Cloud instance:
+>
+> ```text
+> hana-other
+> ```
+>
+> While the Agent may be able to discover additional SAP HANA Cloud instances available in the environment, all operational commands exposed through the MCP Server have been preconfigured and validated exclusively for the **hana-other** instance.
+>
+> As a result:
+>
+> * Health checks, backup checks, snapshot analysis, audit log analysis, and other operational activities are expected to work only for **hana-other**
+> * Attempts to execute the same operations against other discovered instances may fail or return incomplete results
+> * This behavior is intentional and has been implemented to ensure a consistent and isolated workshop experience for all participants
+>
+> During the hands-on exercises and bonus challenges, please focus your interactions on:
+>
+> ```text
+> hana-other
+> ```
+>
+> In a productive environment, the same MCP Server and Agent architecture can be extended to manage multiple SAP HANA Cloud instances across different subaccounts, regions, and environments.
+
 ---
 
 ## Sample Questions
