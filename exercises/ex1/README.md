@@ -10,7 +10,102 @@ For a better understanding of the use case, refer to the diagram below:
 
 ### Exercise 1.1 – Build Your First Command in SAP Automation Pilot
 
-Let’s create your first custom command.
+## Understanding the ExecuteHanaCloudSqlStatement Command
+
+Before creating your first automation, it is useful to understand one of the most commonly used commands for SAP HANA Cloud operations:
+
+```text
+ExecuteHanaCloudSqlStatement
+```
+
+This command allows SAP Automation Pilot to establish a connection to an SAP HANA Cloud database and execute a SQL statement provided by the user.
+
+The command accepts parameters such as:
+
+* Database connection URL
+* Database user
+* Password
+* SQL statement to execute
+* Execution timeout
+
+and returns the result of the SQL execution back to the automation workflow.
+
+### Why Is This Important?
+
+Many operational activities in SAP HANA Cloud can be performed by querying system views and metadata tables.
+
+Examples include:
+
+* Checking backup status
+* Reviewing audit logs
+* Monitoring database health
+* Inspecting resource consumption
+* Verifying configuration settings
+* Collecting troubleshooting information
+
+Instead of manually connecting to the database and executing SQL statements, SAP Automation Pilot can automate these activities and integrate them into larger operational workflows.
+
+### How It Fits into Automation Pilot
+
+In SAP Automation Pilot, commands are often built by combining multiple executors.
+
+In this exercise, the executor:
+
+```text
+ExecuteHanaCloudSqlStatement
+```
+
+acts as the component responsible for interacting with SAP HANA Cloud.
+
+The workflow looks like:
+
+```text
+SAP Automation Pilot
+        |
+        v
+ExecuteHanaCloudSqlStatement
+        |
+        v
+SAP HANA Cloud
+        |
+        v
+SQL Result
+        |
+        v
+Command Output
+```
+
+The result can then be:
+
+* Returned to the operator
+* Validated against a condition
+* Used by another command
+* Sent to monitoring systems
+* Included in notifications
+* Consumed by AI-enabled Operations Agents
+
+### Example
+
+The following SQL statement checks whether a successful database backup exists:
+
+```sql
+SELECT MAX(ENTRY_ID)
+FROM SYS.M_BACKUP_CATALOG
+WHERE ENTRY_TYPE_NAME = 'complete data backup'
+AND STATE_NAME = 'successful'
+```
+
+This is exactly the approach you will use throughout this hands-on session: execute SQL statements against SAP HANA Cloud, retrieve operational insights, and use SAP Automation Pilot to automate the next steps based on the results.
+
+> **Further Reading**
+>
+> The official SAP Help documentation for this command is available here:
+>
+> https://help.sap.com/docs/automation-pilot/automation-pilot/executehanacloudsqlstatement-command
+
+## Using the ExecuteHanaCloudSqlStatement Command in practice
+
+In the next exercise, you will use this command as the foundation for building your first SAP HANA Cloud operational automation.
 
 1. Click  the **Commands** menu item from the left sidebar to navigate to the "Commands" section in SAP Automation Pilot 
    ![](./images/1-00-00-2-dsag.png)
