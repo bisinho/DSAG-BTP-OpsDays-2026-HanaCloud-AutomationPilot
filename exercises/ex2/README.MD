@@ -335,14 +335,16 @@ and extend it so that the final command behaves like:
 2. Open the command.
 
 3. Click **Clone**.
+![](./images/ex-02-11-dsag.png)
 
 4. Use the following name for the new command:
 
 ```text
-03RunHanaCloudAuditCheck
+02RunHanaCloudAuditCheckExtended
 ```
+![](./images/ex-02-12-dsag.png)
 
-5. Click **Create**.
+5. Click **Clone**.
 
 You now have a copy of the command that already contains:
 
@@ -364,6 +366,7 @@ Add a new input key:
 | Field       | Value             |
 | ----------- | ----------------- |
 | Name        | `serviceKey`      |
+| Sensitive   | Yes               |
 | Type        | `object`          |
 | Description | `ANS service key` |
 | Required    | Yes               |
@@ -382,17 +385,23 @@ Scroll to the **Executors** section and click **Add**.
 
 Configure the executor as follows:
 
+Point on **Here** , just between the **Reading Audit Logs** and **Output** executors. 
+
 | Field   | Value          |
 | ------- | -------------- |
 | Alias   | `sendEmail`    |
 | Command | `SendAnsEvent` |
-| Catalog | `ans-sapcp`    |
+
+**Automap parameters** to be enabled. 
+![](./images/ex-02-13-dsag.png)
 
 This executor will send an event to SAP Alert Notification service.
 
 ---
 
 ## Step 4 – Configure the Executor Parameters
+
+![](./images/ex-02-14-dsag.png)
 
 Open the parameter mapping of the `sendEmail` executor and provide the following values:
 
@@ -420,6 +429,8 @@ This body dynamically includes:
 * The user
 * The number of entries
 
+Click on **Update** button to save it. 
+![](./images/ex-02-15-dsag.png)
 ---
 
 ## Step 5 – Add Conditional Execution
@@ -428,17 +439,22 @@ The alert should only be sent if suspicious audit log entries were found.
 
 Open the **Condition** section of the `sendEmail` executor and configure:
 
-| Field      | Value                                                          |
-| ---------- | -------------------------------------------------------------- |
-| Expression | `$( [.ReadAuditLogs.output.result \| toArray[][] ] \| length)` |
-| Operator   | `GREATER_THAN`                                                 |
-| Value      | `0`                                                            |
+| Field        | Value                                                            |
+| ------------ | ---------------------------------------------------------------- |
+| Actual Value | `$( [.ReadAuditLogs.output.result | toArray[][] ] | length)`   |
+| Operator        | `is grater then`                                                 |
+| Expected Value        | `0`                                                              |
+
+Click on **Update** button to save it. 
+![](./images/ex-02-16-dsag.png)
+![](./images/ex-02-17-dsag.png)
 
 This means:
 
 ```text
 Send an alert only if the audit log query returned at least one result.
 ```
+
 
 This prevents unnecessary notifications when no relevant audit log entries were found.
 
@@ -459,6 +475,7 @@ Then map the output value to:
 ```text
 $(.sendEmail.output.id)
 ```
+![](./images/ex-02-18-dsag.png)
 
 The command should now return:
 
@@ -477,13 +494,105 @@ The command should now return:
    * **DsagOtherEnvHanaBindingCredentials**
    * **dsagAns**
 
+![](./images/ex-02-19-dsag.png)
+
 3. Click **Trigger**
 
 After the execution completes, check the command output.
 
 If suspicious audit log entries were found, the `sendEmail` executor should run and return an Alert Notification event ID.
+![](./images/ex-02-20-dsag.png)
 
-You should also receive an email notification generated through SAP Alert Notification service.
+**REMARK**: Since the instructor cannot collect personal data, a preconfigured action and subscription in SAP Alert Notification service (ANS) has been created delivering emails to instructor's email inbox. That is an email notification generated through SAP Alert Notification service.
+![](./images/ex-02-21-dsag.png)
+
+Hint: in case you want to recreate after the hands-on session the email sending setup via Alert Notification service, please consult: 
+- Alert Notification service help documentation at: https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/managing-subscriptions
+- Alert Notification service **Email Action Type** at: https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/email-action-type
+
+The following subscription and action type in SAP Alert Notification service has been created in advance: 
+
+![](./images/ex-02-22-dsag.png)
+
+![](./images/ex-02-23-dsag.png)
+
+For HTML template, the following one has been used: 
+```html
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, Helvetica, sans-serif; color:#1f2937; background:#f5f7fa; padding:24px;">
+
+<div style="max-width:760px; margin:auto; background:#ffffff; border:1px solid #ddd; border-radius:10px; overflow:hidden;">
+
+  <div style="background:#b91c1c; color:white; padding:20px;">
+    <h2 style="margin:0;">Suspicious Audit Log Activity Detected</h2>
+    <p style="margin:8px 0 0 0;">SAP Automation Pilot → SAP Alert Notification service</p>
+  </div>
+
+  <div style="padding:24px;">
+
+    <p style="font-size:15px;">
+      Suspicious audit log entries were detected. Please review whether the activities below are justified.
+    </p>
+
+    <h3>Alert Summary</h3>
+
+    <table style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd; background:#f3f4f6;"><b>Severity</b></td>
+        <td style="padding:8px; border:1px solid #ddd;">{severity}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd; background:#f3f4f6;"><b>Subject</b></td>
+        <td style="padding:8px; border:1px solid #ddd;">{subject}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd; background:#f3f4f6;"><b>Event Type</b></td>
+        <td style="padding:8px; border:1px solid #ddd;">{eventType}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd; background:#f3f4f6;"><b>Timestamp</b></td>
+        <td style="padding:8px; border:1px solid #ddd;">{eventTimestamp}</td>
+      </tr>
+    </table>
+
+    <h3 style="margin-top:24px;">Detected Audit Log Entries</h3>
+
+    <div style="background:#fff7ed; border-left:5px solid #f97316; padding:16px; margin-top:10px;">
+      <pre style="white-space:pre-wrap; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:1.6; margin:0;">{body}</pre>
+    </div>
+
+    <h3 style="margin-top:24px;">Event Details</h3>
+
+    <table style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd; background:#f3f4f6;"><b>Event ID</b></td>
+        <td style="padding:8px; border:1px solid #ddd;">{id}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd; background:#f3f4f6;"><b>Category</b></td>
+        <td style="padding:8px; border:1px solid #ddd;">{category}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd; background:#f3f4f6;"><b>Region</b></td>
+        <td style="padding:8px; border:1px solid #ddd;">{region}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd; background:#f3f4f6;"><b>Resource</b></td>
+        <td style="padding:8px; border:1px solid #ddd;">{resource.resourceName}</td>
+      </tr>
+    </table>
+
+    <p style="font-size:12px; color:#6b7280; margin-top:24px;">
+      {ans-disclaimer}
+    </p>
+
+  </div>
+</div>
+
+</body>
+</html>
+```
 
 ---
 
@@ -510,7 +619,7 @@ Check that your command contains:
 
 ---
 
-# Exercise 2.4 – Reacting to Failures Automatically
+# [Optional] Exercise 2.4 – Reacting to Failures Automatically
 
 Operational automation should not only handle successful executions.
 
@@ -533,6 +642,9 @@ The listener automatically triggers another command:
 ```text
 SendEmailFailedHanaAuditCheck
 ```
+It also can pass predefined commands to the referenced command that will be triggered if the current commands fails. 
+![](./images/ex-02-24-dsag.png)
+![](./images/ex-02-25-dsag.png)
 
 ---
 
@@ -572,6 +684,8 @@ Notice that the command automatically receives:
 * Execution ID
 * Originator information
 * Database connection details
+
+![](./images/ex-02-26-dsag.png)
 
 These values are passed by the listener and included in the generated notification.
 
