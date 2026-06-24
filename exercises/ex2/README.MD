@@ -27,11 +27,11 @@ After completing this exercise, you will:
 
 Before performing any audit checks, it is good practice to verify that the database is reachable and the provided credentials are valid.
 
-For this purpose, navigate to:
-
-**Commands** → **01RunHanaCloudAuditCheck**
+For this purpose, navigate to your catalog **DSAG HANA Ops Ex02** → **Commands** → **01RunHanaCloudAuditCheck**
+![](./images/ex-02-01-dsag.png)
 
 Open the command and review the configuration.
+![](./images/ex-02-02-dsag.png)
 
 You will notice a single executor:
 
