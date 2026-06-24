@@ -36,6 +36,7 @@ Open the command and review the configuration.
 You will notice a single executor:
 
 **CheckHanaConnectivity**
+![](./images/ex-02-03-dsag.png)
 
 The executor uses the following command:
 
@@ -66,6 +67,7 @@ Otherwise, a failed audit check may simply indicate a connectivity issue rather 
 ---
 
 ## Review the Command Contract
+![](./images/ex-02-04-dsag.png)
 
 The command requires the following input keys:
 
@@ -95,10 +97,14 @@ $(.CheckHanaConnectivity.output.result)
 2. Select the input set:
    **DsagOtherEnvHanaBindingCredentials**
 3. Click **Trigger**
+![](./images/ex-02-05-dsag.png)
 
 After the execution completes, open the output section.
 
-You should see a successful response from the database.
+You should see a successful response from the database: 
+```[[["X"]]]```
+
+![](./images/ex-02-06-dsag.png)
 
 ✅ Connectivity to SAP HANA Cloud has been verified successfully.
 
@@ -115,6 +121,8 @@ Navigate to:
 Compared to the previous version, this command introduces an additional executor:
 
 **ReadAuditLogs**
+
+![](./images/ex-02-07-dsag.png)
 
 The command now contains two executors:
 
@@ -133,11 +141,12 @@ The first executor is still used as a basic connectivity check:
 SELECT * FROM SYS.DUMMY
 ```
 
-This confirms that the database can be reached before the command continues with the audit log analysis.
+In the previous step we've covert this out - it confirms that the database can be reached before the command continues with the audit log analysis.
 
 ---
 
 ## Review the Audit Log SQL Statement
+![](./images/ex-02-08-dsag.png)
 
 Open the **ReadAuditLogs** executor and review the SQL statement.
 
@@ -229,30 +238,6 @@ This gives operators a summarized view of potentially relevant audit activities 
 
 ---
 
-## Understanding the Output Transformation
-
-The raw SQL result contains multiple rows and columns.
-
-To make the output easier to read, the command transforms the result into a summarized text format:
-
-```text
-$("\n\n")$(.ReadAuditLogs.output.result | toArray[] | map("\(.[0]) by \(.[1] // "UNKNOWN") (\(.[4]) entries)") | join("\n"))
-```
-
-This expression takes the SQL result and formats each row into a readable line.
-
-Example output:
-
-```text
-Authorizations changes by WORKSHOP_USER (4 entries)
-
-User administration by ADMIN (1 entries)
-```
-
-This transformation converts technical database output into information that can be consumed more easily by operations teams.
-
----
-
 ## Review the Command Outputs
 
 The command returns:
@@ -261,6 +246,27 @@ The command returns:
 | -------------------- | ----------------------------------------- |
 | `connectivityResult` | `$(.CheckHanaConnectivity.output.result)` |
 | `logsResult`         | Transformed result from `ReadAuditLogs`   |
+
+_Hint:_ The raw SQL result contains multiple rows and columns.
+
+To make the output easier to read, the command transforms the result into a summarized string format for the output:
+
+```$("\n\n")$(.ReadAuditLogs.output.result | toArray[] | map("\(.[0]) by \(.[1] // "UNKNOWN") (\(.[4]) entries)") | join("\n"))```
+![](./images/ex-02-09-dsag.png)
+
+This expression takes the SQL result and formats each row into a readable line.
+
+Example output:
+
+```text
+_SAP_user administration by _SAP_DB_ACCESS_OPERATOR (1 entries)
+_SAP_session validate by DBADMIN (4 entries)
+_SAP_user administration by DBADMIN (12 entries)
+_SAP_user administration by SYSTEM (2 entries)
+```
+
+This transformation converts technical database output into information that can be consumed more easily by operations teams.
+
 
 The `logsResult` output is the operationally meaningful result of this command.
 
@@ -281,6 +287,9 @@ The command now returns:
 * Matching audit log entries
 
 If no suspicious activities are found, the result may be empty.
+
+In case there are suspecious activities, the output shall look like similar to this one: 
+![](./images/ex-02-10-dsag.png)
 
 ✅ Audit log analysis completed successfully.
 
