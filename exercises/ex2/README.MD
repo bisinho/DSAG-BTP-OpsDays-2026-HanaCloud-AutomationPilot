@@ -438,12 +438,9 @@ Click on **Update** button to save it.
 The alert should only be sent if suspicious audit log entries were found.
 
 Open the **Condition** section of the `sendEmail` executor and configure:
-
-| Field        | Value                                                            |
-| ------------ | ---------------------------------------------------------------- |
-| Actual Value | `$( [.ReadAuditLogs.output.result | toArray[][] ] | length)`   |
-| Operator        | `is grater then`                                                 |
-| Expected Value        | `0`                                                              |
+- **Actual Value**: `$( [.ReadAuditLogs.output.result | toArray[][] ] | length)`
+- **Operator**: `is grater then`
+- **Expected Value**: `0`
 
 Click on **Update** button to save it. 
 ![](./images/ex-02-16-dsag.png)
