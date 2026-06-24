@@ -322,8 +322,3 @@ You have successfully:
 Proceed to the next step:  
 ➡️ [Exercise 2 – Run HANA Cloud Audit logs check](exercises/ex2/README.MD)
 
-[Exercise 2](./exercises/ex2/README.md)
-
-➡️ [Exercise 1 – HANA Cloud Backup Checks](../ex2/README.md)
-
-[Exercise 2](./exercises/ex2/README.md)
