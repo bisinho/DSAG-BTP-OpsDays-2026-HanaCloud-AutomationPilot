@@ -1,4 +1,4 @@
-# Exercise 1 – HANA Cloud Backup Checks
+# Exercise 1 – Run HANA Cloud Backup Checks via SAP Automation Pilot
 
 In this exercise, you will build your first command in SAP Automation Pilot - it will be about performing checks whether there is a recent backup on our SAP HANA Cloud instance. 
 
