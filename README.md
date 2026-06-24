@@ -36,8 +36,21 @@ Automations in SAP Automation Pilot can be triggered in various ways to best fit
 
 The service is designed to work with low latency, even under a heavy workload, and is capable of triggering hundreds of automations simultaneously.
 
-## SAP Joule 
-[add text - intro to Joule, what ops agents are why it brings value to SAP HANA Cloud Lifecycle Management tasks)
+## SAP Joule
+
+SAP Joule is SAP’s AI copilot that enables users to interact with SAP solutions through natural language. By integrating with tools and services through standards such as the **Model Context Protocol (MCP)**, Joule can go beyond answering questions and actively support operational tasks.
+
+In the context of SAP HANA Cloud, AI-enabled Operations Agents can assist with activities such as:
+* Checking instance availability and health status
+* Verifying backups and recovery readiness
+* Analyzing audit logs
+* Reviewing snapshots and lifecycle events
+* Supporting troubleshooting and operational investigations
+
+By exposing SAP Automation Pilot commands as MCP tools, Joule Agents can securely execute operational workflows and retrieve structured results. This allows DevOps, SRE, and Operations teams to interact with SAP HANA Cloud using natural language while SAP Automation Pilot performs the underlying automation.
+
+During this hands-on session, you will explore how SAP Automation Pilot and SAP Joule can work together to enable AI-powered operations for SAP HANA Cloud.
+
 
 ## [next steps] Potential extension by integrating Central Observability platform as SAP Cloud ALM for operations
 ![](./usecase-final-dsag-calm.png) 
@@ -61,9 +74,11 @@ You do **not** need to perform any setup steps — simply proceed with the hands
 
 
 ## Exercises
-Let's start the exercise - for a better understanding, please follow the exercise as listed below:
-Continue to: 
-- [Getting Started](exercises/ex0/)
+Let's start the exercise!
+
+Proceed to the next step:  
+➡️ [Exercise 0 – Get to Know Your Environment](../ex0/README.md)
+
 
 
 ## Contributing
