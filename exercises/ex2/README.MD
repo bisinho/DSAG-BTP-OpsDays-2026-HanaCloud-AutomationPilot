@@ -251,7 +251,9 @@ _Hint:_ The raw SQL result contains multiple rows and columns.
 
 To make the output easier to read, the command transforms the result into a summarized string format for the output:
 
-```$("\n\n")$(.ReadAuditLogs.output.result | toArray[] | map("\(.[0]) by \(.[1] // "UNKNOWN") (\(.[4]) entries)") | join("\n"))```
+```text
+$("\n\n")$(.ReadAuditLogs.output.result | toArray[] | map("\(.[0]) by \(.[1] // "UNKNOWN") (\(.[4]) entries)") | join("\n"))
+```
 ![](./images/ex-02-09-dsag.png)
 
 This expression takes the SQL result and formats each row into a readable line.
