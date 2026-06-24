@@ -63,15 +63,20 @@ This  session is **interactive  hands-on**, ensuring you gain **real-world exper
 
 ## Prerequisites (Already Prepared for You)
 
-The following setup and access prerequisites have been **preconfigured for all participants**.  
-You do **not** need to perform any setup steps — simply proceed with the hands-on exercises.
+The following setup and access prerequisites have been **preconfigured for all participants**.
 
-- Access to **SAP Automation Pilot**  
-- Read-only access to a single instance of **HANA Cloud** running on other environment 
-- Access to Joule Ops Agent (execute permissions granted) to interact with HANA DB Lifecyclemanagement tasks in an agentic manner   
-- **SAP AI Core** credentials with a **GPT-4o** deployment
-- Service key for **SAP Alert Notification service** in place
+You do **not** need to perform any setup activities — simply proceed with the hands-on exercises.
 
+The workshop environment includes:
+
+* Access to **SAP Automation Pilot**
+* Read-only access to a shared **SAP HANA Cloud** instance running on **Other Environment**
+* Preconfigured HANA Cloud connection credentials stored as SAP Automation Pilot input keys
+* Service key for **SAP Alert Notification service**
+* Access to a preconfigured **HANA Cloud Lifecycle Manager MCP Server**
+* Access to a deployed **SAP Joule Agent** integrated with SAP Automation Pilot through MCP
+
+Throughout the hands-on exercises, you will use these services to automate operational tasks, analyze SAP HANA Cloud health and audit information, trigger alerts, and interact with AI-enabled Operations Agents powered by SAP Joule.
 
 ## Exercises
 Let's start the exercise!
