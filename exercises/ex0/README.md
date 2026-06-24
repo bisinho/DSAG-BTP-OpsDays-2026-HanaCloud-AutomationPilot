@@ -32,11 +32,11 @@ After completing this exercise, you will:
    ![](./images/01-1-01.png)
 
 5. You will land on the **SAP Automation Pilot Dashboard**.  
-   ![](./images/01-1-02.png)
+   ![](./images/dsag-new-01.png)
 
 6. From the left menu, open **Provided Catalogs**.  
    Browse through the 300+ ready-to-use automation commands grouped by catalogs.  
-   ![](./images/01-1-03.png)
+   ![](./images/dsag-new-01.png)
 
 You can also explore:  
 - **My Catalogs** – your custom and extended commands  
