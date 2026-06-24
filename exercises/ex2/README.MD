@@ -1,11 +1,18 @@
-# Exercise 1 – HANA Cloud Backup Checks
+# Exercise 2 – Run HANA Cloud Audit Logs Checks via SAP Automation Pilot
 
-In this exercise, you will build your first command in SAP Automation Pilot - it will be about performing checks whether there is a recent backup on our SAP HANA Cloud instance. 
+In this exercise, you will build / explore another command in SAP Automation Pilot - it will be about performimg an SQL query to find any audit log entries that might be considered suspiciousour in our SAP HANA Cloud instance. 
 
+Auditing allows you to monitor and record selected actions performed in the SAP HANA Cloud database. It can help you achieve better security in the following ways:
+* Uncover security vulnerabilities
+* Show attempts to breach security
+
+The commands does so by pulling data from the [AUDIT_LOG system view](https://help.sap.com/docs/HANA_SERVICE_CF/7c78579ce9b14a669c1f3295b0d8ca16/d1fe1244d29510148f69be8b0e060dcc.html). If there is at least one such audit log entry, the command will get it and we can define the next step - in our scenario it is about pushing an event to SAP Aleer Notification service (note the configurations in SAP Alert Notificaton service are preconfigured as we are unclear about participants email and just user receives all notifications via email). 
 
 For a better understanding of the use case, refer to the diagram below:  
 
-![](./images/ex-01-scenario-dsag.png)
+![](./images/ex-02-scenario-dsag.png)
+
+
 ---
 
 ### Exercise 1.1 – Build Your First Command in SAP Automation Pilot
