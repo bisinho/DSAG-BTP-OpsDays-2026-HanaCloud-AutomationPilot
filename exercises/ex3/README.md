@@ -413,6 +413,9 @@ and the password provided during the workshop.
 >
 > In a productive environment, the same MCP Server and Agent architecture can be extended to manage multiple SAP HANA Cloud instances across different subaccounts, regions, and environments.
 
+### Interacting with the Ops Agent
+![](./images/joule-00.png)
+
 ---
 
 ## Sample Questions
@@ -520,6 +523,20 @@ Agent Provides Recommendation
 ```
 
 The operator remains in control while the AI Agent accelerates operational analysis and decision making.
+
+### Reference conversations
+Attaching undearneath few conversations with the agent as a reference: 
+
+![](./images/joule-q01.png)
+
+![](./images/joule-q02.png)
+
+![](./images/joule-q03.png)
+
+![](./images/joule-q04.png)
+
+![](./images/joule-q05.png)
+
 
 ---
 
