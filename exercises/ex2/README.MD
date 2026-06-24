@@ -12,7 +12,6 @@ For a better understanding of the use case, refer to the diagram below:
 
 ![](./images/ex-02-scenario-dsag.png)
 
-
 ---
 
 ### Exercise 1.1 – Build Your First Command in SAP Automation Pilot
